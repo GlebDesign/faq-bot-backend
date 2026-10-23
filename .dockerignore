@@ -1,0 +1,7 @@
+.git
+.idea
+**/.env
+**/.env.*
+**/*_test.go
+backend/bin
+backend/tmp
