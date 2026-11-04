@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -40,19 +39,19 @@ func WithTx(ctx context.Context, pool *sql.DB, fn func(context.Context, *sql.Tx)
 	defer cancel()
 	tx, err := pool.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("begin transaction: %w", err)
+		return WrapError("begin transaction", err)
 	}
 	defer func() {
 		rollbackErr := tx.Rollback()
 		if rollbackErr != nil && !errors.Is(rollbackErr, sql.ErrTxDone) {
-			err = errors.Join(err, fmt.Errorf("rollback transaction: %w", rollbackErr))
+			err = errors.Join(err, WrapError("rollback transaction", rollbackErr))
 		}
 	}()
 	if err := fn(ctx, tx); err != nil {
-		return fmt.Errorf("transaction callback: %w", err)
+		return WrapError("transaction callback", err)
 	}
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit transaction: %w", err)
+		return WrapError("commit transaction", err)
 	}
 	return nil
 }

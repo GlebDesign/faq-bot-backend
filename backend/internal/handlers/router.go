@@ -20,8 +20,11 @@ func (h *Health) Drain() { h.ready.Store(false) }
 
 var requestIDPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,80}$`)
 
-func NewHandler(health *Health) http.Handler {
+func NewHandler(health *Health, auth ...*AuthHandler) http.Handler {
 	mux := http.NewServeMux()
+	if len(auth) > 0 && auth[0] != nil {
+		mux.Handle("/api/v1/auth/", auth[0])
+	}
 	for _, path := range []string{"/health/startup", "/health/ready", "/health/live"} {
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method != http.MethodGet && r.Method != http.MethodHead {
