@@ -3,17 +3,24 @@ package config
 import (
 	"errors"
 	"net"
+	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type Config struct {
-	DatabaseURL     string
-	MigrationsPath  string
-	Environment     string
-	ListenAddr      string
-	ShutdownTimeout time.Duration
+	AuthEnabled           bool
+	SupabaseURL           string
+	SupabaseKey           string
+	AuthOrigin            string
+	AuthAllowInsecureHTTP bool
+	DatabaseURL           string
+	MigrationsPath        string
+	Environment           string
+	ListenAddr            string
+	ShutdownTimeout       time.Duration
 }
 
 func Load() (Config, error) {
@@ -63,6 +70,43 @@ func Load() (Config, error) {
 			return Config{}, errors.New("MIGRATIONS_PATH must not be empty")
 		}
 		c.MigrationsPath = value
+	}
+	c.SupabaseURL = os.Getenv("SUPABASE_URL")
+	c.SupabaseKey = os.Getenv("SUPABASE_KEY")
+	c.AuthOrigin = os.Getenv("AUTH_ORIGIN")
+	raw, insecureSet := os.LookupEnv("AUTH_ALLOW_INSECURE_HTTP")
+	if insecureSet {
+		c.AuthAllowInsecureHTTP, err = strconv.ParseBool(raw)
+		if err != nil {
+			return Config{}, errors.New("AUTH_ALLOW_INSECURE_HTTP must be a boolean")
+		}
+	}
+	_, urlSet := os.LookupEnv("SUPABASE_URL")
+	_, keySet := os.LookupEnv("SUPABASE_KEY")
+	_, originSet := os.LookupEnv("AUTH_ORIGIN")
+	c.AuthEnabled = urlSet || keySet || originSet || insecureSet
+	if c.AuthEnabled {
+		if c.SupabaseURL == "" || strings.TrimSpace(c.SupabaseKey) == "" || c.AuthOrigin == "" || c.DatabaseURL == "" {
+			return Config{}, errors.New("SUPABASE_URL, SUPABASE_KEY, AUTH_ORIGIN and DATABASE_URL must be configured together")
+		}
+		if c.AuthAllowInsecureHTTP && c.Environment != "development" {
+			return Config{}, errors.New("AUTH_ALLOW_INSECURE_HTTP is only allowed in development")
+		}
+		for _, item := range []struct {
+			key, value string
+			origin     bool
+		}{{"SUPABASE_URL", c.SupabaseURL, false}, {"AUTH_ORIGIN", c.AuthOrigin, true}} {
+			u, parseErr := url.Parse(item.value)
+			if parseErr != nil || u.Host == "" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") || (item.origin && u.Path != "") {
+				return Config{}, errors.New(item.key + " must be an origin URL without credentials, path, query or fragment")
+			}
+			if u.Scheme != "https" {
+				ip := net.ParseIP(u.Hostname())
+				if !c.AuthAllowInsecureHTTP || u.Scheme != "http" || (u.Hostname() != "localhost" && (ip == nil || !ip.IsLoopback())) {
+					return Config{}, errors.New(item.key + " requires HTTPS; local HTTP requires explicit development configuration")
+				}
+			}
+		}
 	}
 	return c, nil
 }

@@ -13,9 +13,12 @@ import (
 	"syscall"
 	"time"
 
+	"faqbot/backend/internal/authprovider"
 	"faqbot/backend/internal/config"
 	"faqbot/backend/internal/db"
 	"faqbot/backend/internal/handlers"
+	"faqbot/backend/internal/repository"
+	"faqbot/backend/internal/service"
 )
 
 func main() {
@@ -31,6 +34,9 @@ func run(logger *slog.Logger) (err error) {
 	if err != nil {
 		return err
 	}
+	if !cfg.AuthEnabled && cfg.Environment != "development" {
+		return errors.New("authentication configuration is required outside development")
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	var pool *sql.DB
@@ -41,7 +47,7 @@ func run(logger *slog.Logger) (err error) {
 		}
 		defer func() {
 			if closeErr := pool.Close(); closeErr != nil {
-				err = errors.Join(err, fmt.Errorf("close API database: %w", closeErr))
+				err = errors.Join(err, db.WrapError("close API database", closeErr))
 			}
 		}()
 	}
@@ -54,8 +60,12 @@ func run(logger *slog.Logger) (err error) {
 	if pool != nil {
 		health.Check = pool.PingContext
 	}
+	var auth *handlers.AuthHandler
+	if cfg.AuthEnabled {
+		auth = handlers.NewAuthHandler(service.New(repository.NewAuth(pool), authprovider.NewSupabase(cfg.SupabaseURL, cfg.SupabaseKey)), cfg.AuthOrigin, cfg.AuthAllowInsecureHTTP)
+	}
 	server := &http.Server{
-		Handler:           handlers.NewHandler(health),
+		Handler:           handlers.NewHandler(health, auth),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
