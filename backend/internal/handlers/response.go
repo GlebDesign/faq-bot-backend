@@ -3,13 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+
+	"faqbot/backend/internal/handlers/dto"
 )
 
-type apiError struct {
-	Code      string `json:"code"`
-	Message   string `json:"message"`
-	RequestID string `json:"request_id"`
-}
+type apiError = dto.APIError
 
 func writeJSON(w http.ResponseWriter, status int, value any) {
 	w.Header().Set("Content-Type", "application/json")

@@ -2,7 +2,7 @@ FROM golang:1.24-alpine AS build
 WORKDIR /src
 COPY backend/go.mod backend/go.sum ./
 COPY backend/ ./
-RUN mkdir -p migrations && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /api ./cmd/api && \
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /api ./cmd/api && \
     CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /migrate ./cmd/migrate
 
 FROM scratch
