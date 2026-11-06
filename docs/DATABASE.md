@@ -48,8 +48,8 @@ psql "$DATABASE_URL" -c 'SELECT version, dirty FROM schema_migrations;'
 `accounts`, `account_members` и `SELECT, INSERT, UPDATE, DELETE` для `sessions`.
 Прав на изменение схемы и доступ к `schema_migrations` API не требуется.
 UUID создаёт Go, последовательности и расширения PostgreSQL миграция не использует.
-Готовый SQL и проверка прав находятся в [плане релиза 0.0.1](upgrade_cluster/release_0.0.1.md).
-В нём используется схема `public`: мигратор и API должны видеть одни таблицы
+Готовый SQL и проверка прав находятся в [инструкции наката миграций](MIGRATIONS.md).
+В ней используется схема `public`: мигратор и API должны видеть одни таблицы
 через одинаковый `search_path`. Прикладные запросы не содержат имён схем.
 
 ## Какие данные хранятся
