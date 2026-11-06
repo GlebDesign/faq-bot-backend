@@ -26,6 +26,7 @@ SYSTEM_PROMPT = """Ты FAQ-помощник компании. Отвечай п
 """
 
 PROMPT = ChatPromptTemplate.from_messages([("system", SYSTEM_PROMPT), ("human", "{payload}")])
+MAX_DOCUMENT_BYTES = 2_000_000
 
 
 def digest(text: str) -> str:
@@ -65,26 +66,43 @@ class RagService:
             raise AppError("unsupported_format", "Прототип поддерживает только UTF-8 TXT/MD.")
         try:
             with path.open("rb") as file:
-                raw = file.read(2_000_001)
+                raw = file.read(MAX_DOCUMENT_BYTES + 1)
         except OSError as exc:
             raise AppError("file_error", "Не удалось прочитать файл.") from exc
-        if len(raw) > 2_000_000:
+        if len(raw) > MAX_DOCUMENT_BYTES:
             raise AppError("file_too_large", "Файл превышает лимит 2 MB.")
         try:
-            text = raw.decode("utf-8-sig").replace("\r\n", "\n").replace("\r", "\n")
+            text = raw.decode("utf-8-sig")
         except UnicodeDecodeError as exc:
             raise AppError("invalid_encoding", "Сохрани файл в UTF-8.") from exc
+        return self._index_text(scope, text, document_id, path.name)
+
+    def ingest_text(self, scope: Scope, text: str, document_id: str, name: str) -> dict:
+        validate_id(document_id)
+        name = name.strip()
+        if not name or len(name) > 128 or any(ord(char) < 32 for char in name):
+            raise AppError("invalid_input", "Укажи название источника: 1–128 символов без управляющих знаков.")
+        try:
+            size = len(text.encode("utf-8"))
+        except UnicodeEncodeError as exc:
+            raise AppError("invalid_encoding", "Текст должен кодироваться в UTF-8.") from exc
+        if size > MAX_DOCUMENT_BYTES:
+            raise AppError("file_too_large", "Текст превышает лимит 2 MB в UTF-8.")
+        return self._index_text(scope, text, document_id, name)
+
+    def _index_text(self, scope: Scope, text: str, document_id: str, source_name: str) -> dict:
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
         if not text.strip() or "\x00" in text:
-            raise AppError("invalid_document", "Файл пустой или содержит бинарные данные.")
+            raise AppError("invalid_document", "Текст пустой или содержит бинарные данные.")
         documents = self.splitter.create_documents([text])
         if not documents or len(documents) > 1000:
             raise AppError("document_limit", "Документ должен содержать от 1 до 1000 фрагментов.")
-        fingerprint = digest(json.dumps([text, path.name, self.backend.embedding_key,
+        fingerprint = digest(json.dumps([text, source_name, self.backend.embedding_key,
                                          self.settings.chunk_size, self.settings.chunk_overlap], ensure_ascii=False))
         chunks = [{"chunk_id": digest(f"{document_id}:{fingerprint}:{i}"), "content": doc.page_content,
                    "start_char": doc.metadata["start_index"]} for i, doc in enumerate(documents)]
         vectors = self.embed([chunk["content"] for chunk in chunks])
-        revision = self.store.replace(scope, document_id, path.name, fingerprint,
+        revision = self.store.replace(scope, document_id, source_name, fingerprint,
                                       self.backend.embedding_key, chunks, vectors)
         return {"document_id": document_id, "chunks": len(chunks), "knowledge_version": revision,
                 "backend": self.backend.name, "embedding_key": self.backend.embedding_key}
