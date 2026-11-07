@@ -32,11 +32,22 @@ jobs:
           username: ${{ secrets.SERGEY_LOGIN }}
           password: ${{ secrets.SERGEY_PASSWORD }}
 
+      - name: Normalize Docker Hub namespace
+        env:
+          LOGIN: ${{ secrets.SERGEY_LOGIN }}
+        run: |
+          namespace="$(printf '%s' "$LOGIN" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+          if ! printf '%s' "$namespace" | grep -Eq '^[a-z0-9]+([._-][a-z0-9]+)*$'; then
+            echo "::error::SERGEY_LOGIN must be a Docker Hub username (not an email)"
+            exit 1
+          fi
+          echo "DOCKERHUB_NAMESPACE=$namespace" >> "$GITHUB_ENV"
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: docker.io/${{ secrets.SERGEY_LOGIN }}/${{ env.IMAGE_NAME }}
+          images: docker.io/${{ env.DOCKERHUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/dev' }}
