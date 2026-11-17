@@ -1,6 +1,6 @@
 # PostgreSQL: подключение и данные
 
-Backend хранит пользователей, компании, членство в компаниях и сессии в PostgreSQL.
+Backend хранит пользователей, компании, членство в компаниях, сессии и события аудита в PostgreSQL.
 Поиск по знаниям локального AI CLI использует отдельный SQLite, к этой БД он не подключён.
 Драйвер backend — pgx через стандартный `database/sql`.
 
@@ -41,12 +41,14 @@ psql "$DATABASE_URL" -c 'SELECT 1;'
 psql "$DATABASE_URL" -c 'SELECT version, dirty FROM schema_migrations;'
 ```
 
-После первой миграции ожидается `version=1`, `dirty=false`.
+После применения всех миграций ожидается `version=2`, `dirty=false`.
 Для production следует разделить роли: migrator меняет схему, API выполняет
 только нужные запросы к данным. Автоматического создания ролей в проекте нет.
 Роли API достаточно `CONNECT` к БД, `USAGE` схемы, `SELECT, INSERT` для `users`,
 `accounts`, `account_members` и `SELECT, INSERT, UPDATE, DELETE` для `sessions`.
-Прав на изменение схемы и доступ к `schema_migrations` API не требуется.
+Для `audit_events` нужны `SELECT, INSERT`: SELECT сравнивает повтор по ключу,
+UPDATE/DELETE/TRUNCATE запрещены. Прав на изменение схемы и доступ к
+`schema_migrations` API не требуется.
 UUID создаёт Go, последовательности и расширения PostgreSQL миграция не использует.
 Готовый SQL и проверка прав находятся в [инструкции наката миграций](MIGRATIONS.md).
 В ней используется схема `public`: мигратор и API должны видеть одни таблицы
@@ -60,6 +62,7 @@ UUID создаёт Go, последовательности и расширен
 | `accounts` | Компания с UUID и временем создания |
 | `account_members` | Связь пользователя с компанией, `owner`/`admin`, `audit_read` |
 | `sessions` | SHA-256 хеш токена, CSRF, user/account, сроки absolute/idle, отзыв |
+| `audit_events` | Внутренний журнал с серверным ключом, scope, actor, объектом, исходом и безопасными metadata |
 | `schema_migrations` | Версия схемы и признак незавершённого применения |
 
 Email, пароль и токены Supabase backend не сохраняет.
@@ -103,6 +106,39 @@ go test -count=1 -v ./...
 
 Тесты сами готовят необходимые схемы, предварительный migrate в тестовую БД не
 требуется. Без TEST_DATABASE_URL SQL-проверки пропускаются; это не проверка БД.
+Для проверки прав журнала дополнительно задаётся `TEST_AUDIT_ROLE`: имя заранее
+созданной отдельной роли NOLOGIN без SUPERUSER, CREATEDB, CREATEROLE, REPLICATION,
+BYPASSRLS, владения таблицами и прав DDL. Роль не должна наследовать расширенные
+права. В отдельной локальной тестовой БД администратор может подготовить её так
+(имена роли подключения и тестовой роли заменить своими):
+
+```sql
+CREATE ROLE audit_test_writer NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+GRANT audit_test_writer TO test_database_user;
+```
+
+После этого из `backend`:
+
+```sh
+export TEST_AUDIT_ROLE='audit_test_writer'
+go test -count=1 -v ./internal/migration -run '^TestAuditSQLRestrictedRole$'
+```
+
+Пользователю `TEST_DATABASE_URL` нужны права создания изолированных схем,
+выдачи GRANT на свои схемы и таблицы и выполнения SET ROLE в тестовую роль.
+Тест выдаёт только USAGE текущей схемы и SELECT/INSERT на audit_events,
+переключает роль через SET LOCAL ROLE и проверяет настоящий INSERT, повтор,
+SELECT и запреты UPDATE/DELETE/TRUNCATE с SQLSTATE 42501. Схема и её grants
+удаляются при очистке. Глобальные роли тесты и приложение не создают.
+Без `TEST_AUDIT_ROLE` только `TestAuditSQLRestrictedRole` явно пропускается
+с сообщением `set TEST_AUDIT_ROLE for audit INSERT/SELECT and denied UPDATE/DELETE/TRUNCATE checks`;
+остальным SQL-тестам эта переменная и CREATEROLE не нужны. Пропуск этого теста
+не подтверждает проверку прав.
+
 При неверном URL проверить адрес и порт, роль, пароль, TLS и доступность сервера.
 При `dirty=true` использовать [инструкцию миграций](MIGRATIONS.md), а не менять
 версию наугад.
+
+Аудит и бизнес-изменение записываются одной транзакцией вызывающего сервиса.
+Ссылка на компанию не каскадная, actor и объект сохраняются как идентификаторы
+без каскадного удаления. Подробнее — [AUDIT.md](AUDIT.md).

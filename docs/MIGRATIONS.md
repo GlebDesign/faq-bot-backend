@@ -2,10 +2,11 @@
 
 API не создаёт таблицы при старте. Изменения схемы применяет отдельная программа
 `cmd/migrate` на golang-migrate v4. В [каталоге SQL](../backend/migrations)
-находятся `000001_identity.up.sql` и `000001_identity.down.sql`.
-Текущая версия создаёт `users`, `accounts`, `account_members`, `sessions`
-и индекс `sessions_expiry_idx`. Подготовка БД — в [DATABASE.md](DATABASE.md),
-порядок конкретного выпуска — в [карточке 0.0.1](upgrade_cluster/release_0.0.1.md).
+находятся пары `000001_identity` и `000002_audit` (`up.sql`/`down.sql`).
+Первая создаёт `users`, `accounts`, `account_members`, `sessions`, вторая —
+`audit_events` с ограничениями и индексами. Текущая версия схемы — 2.
+Подготовка БД — в [DATABASE.md](DATABASE.md), обновление —
+в [карточке 0.0.2](upgrade_cluster/release_0.0.2.md).
 
 ## Окружение и подключение
 
@@ -65,7 +66,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 SELECT to_regclass('public.schema_migrations') AS history;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events')
 ORDER BY tablename;
 ```
 
@@ -77,10 +78,10 @@ runner поверх них. Если history не NULL, отдельно вып�
 SELECT version, dirty FROM public.schema_migrations;
 ```
 
-Для релиза 0.0.1 версия 1 с dirty=false допускает повторный запуск; dirty=true
-или версия выше 1 требуют остановки и проверки по разделу ошибок. Пустая history
-допускается только при отсутствии таблиц приложения. Существование таблиц при
-версии 1 дополнительно сверяется по разделу «Проверка результата» до продолжения.
+Версия 1 с dirty=false допускает обновление до 2; версия 2 с dirty=false —
+повторный запуск. Dirty=true или версия выше 2 требуют остановки и проверки
+по разделу ошибок. Пустая history допускается только при отсутствии таблиц
+приложения. Существующую схему сверить с применёнными миграциями до продолжения.
 
 ## Резервная копия
 
@@ -118,7 +119,10 @@ env -u SUPABASE_URL -u SUPABASE_KEY -u AUTH_ORIGIN -u AUTH_ALLOW_INSECURE_HTTP \
 ```
 
 Ожидаются exit code 0 и JSON-лог `migrations are up to date`.
-Это означает успешный `up` либо отсутствие новых версий. Повторный запуск
+Runner вызывает `Up()` и применяет все ожидающие миграции из указанного каталога,
+а не одну выбранную версию. На пустой БД это 000001 и 000002, на версии 1 —
+000002, на чистой версии 2 — отсутствие изменений. Не подменять каталог неполным
+набором SQL ради выбора одной миграции. Повторный запуск
 той же команды допустим: уже применённая миграция повторно не выполняется.
 
 Для уже собранного образа из любого каталога на Docker-хосте заранее задать
@@ -157,16 +161,26 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 ```sql
 SELECT version, dirty FROM public.schema_migrations;
 SELECT name, to_regclass('public.' || name) AS actual_table
-FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions')) AS t(name);
+FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events')) AS t(name);
 SELECT to_regclass('public.sessions_expiry_idx') AS expiry_index;
+SELECT indexname, indexdef FROM pg_indexes
+WHERE schemaname='public' AND tablename='audit_events' ORDER BY indexname;
+SELECT conname, contype, convalidated, pg_get_constraintdef(oid)
+FROM pg_constraint WHERE conrelid='public.audit_events'::regclass
+ORDER BY conname;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events')
 ORDER BY tablename;
 ```
 
-Для версии 0.0.1 ожидаются одна строка `version=1, dirty=false`, четыре ненулевых
-`actual_table`, ненулевой индекс и владелец-migrator. На новой БД таблицы данных
+Ожидаются одна строка `version=2, dirty=false`, пять ненулевых `actual_table`,
+индекс сессий, шесть индексов аудита (PK, unique ключ и четыре поисковых)
+и владелец-migrator. Все ограничения должны быть валидны и соответствовать
+[000002 up](../backend/migrations/000002_audit.up.sql): PK/unique, FK компании,
+CHECK scope/account/actor/entity/outcome, корреляционных полей, source и JSONB.
+SQL проверяет форму action/entity, но не весь прикладной каталог и whitelist
+metadata из [AUDIT.md](AUDIT.md). На новой БД таблицы данных
 пусты. После повторного runner версия и `dirty` остаются такими же.
 Наличие таблиц само по себе не подтверждает историю и права API.
 
@@ -180,13 +194,19 @@ ORDER BY tablename;
 BEGIN;
 GRANT SELECT, INSERT ON public.users, public.accounts, public.account_members TO :"api_role";
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO :"api_role";
+REVOKE UPDATE, DELETE, TRUNCATE ON public.audit_events FROM :"api_role";
+GRANT SELECT, INSERT ON public.audit_events TO :"api_role";
 COMMIT;
 ```
 
 API не нужны DDL-права, доступ к `schema_migrations` и sequences; UUID создаёт Go.
 SELECT для `accounts` можно не выдавать при строго минимальной политике:
 текущий код только вставляет в неё строки. После миграции другой ролью API
-не получает табличные права автоматически.
+не получает табличные права автоматически. SELECT на audit_events нужен для
+сравнения повторов. Изменение журнала ограничено INSERT; это не запрещает
+доверенной серверной роли чтение таблицы. HTTP API чтения и tenant RBAC журнала
+пока отсутствуют. Проверить, что UPDATE/DELETE/TRUNCATE не унаследованы от других
+ролей или PUBLIC; точечный REVOKE не отменяет унаследованные права.
 
 Подключиться как API из любого каталога с `API_DATABASE_URL`:
 
@@ -208,7 +228,12 @@ SELECT
   (has_table_privilege(current_user,'public.sessions','SELECT')
    AND has_table_privilege(current_user,'public.sessions','INSERT')
    AND has_table_privilege(current_user,'public.sessions','UPDATE')
-   AND has_table_privilege(current_user,'public.sessions','DELETE')) AS sessions_access;
+   AND has_table_privilege(current_user,'public.sessions','DELETE')) AS sessions_access,
+  (has_table_privilege(current_user,'public.audit_events','SELECT')
+   AND has_table_privilege(current_user,'public.audit_events','INSERT')) AS audit_access,
+  has_table_privilege(current_user,'public.audit_events','UPDATE') AS audit_update,
+  has_table_privilege(current_user,'public.audit_events','DELETE') AS audit_delete,
+  has_table_privilege(current_user,'public.audit_events','TRUNCATE') AS audit_truncate;
 SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls
 FROM pg_roles WHERE rolname=current_user;
 SELECT has_schema_privilege(current_user,'public','CREATE') AS schema_create;
@@ -216,13 +241,14 @@ SELECT tablename FROM pg_tables
 WHERE schemaname='public' AND tableowner=current_user;
 ```
 
-Ожидаются роль API, целевая БД, схема `public`, пять положительных проверок прав,
-четыре административных флага `false`, `schema_create=false` и отсутствие таблиц
+Ожидаются роль API, целевая БД, схема `public`, шесть положительных проверок
+доступа, audit_update/audit_delete/audit_truncate=false, четыре административных флага `false`, `schema_create=false` и отсутствие таблиц
 во владении API. При другом результате администратор проверяет унаследованные
 привилегии и роли. Эти запросы не меняют grants и не заменяют пробный вход:
 RLS и дополнительные ограничения существующей БД могут влиять на запросы.
 
-Seed-данные не требуются. При первом успешном входе/регистрации приложение
+Seed-данные не требуются, в том числе для `audit_events`. Не вставлять
+фиктивные события в рабочий журнал для проверки установки. При первом успешном входе/регистрации приложение
 создаёт пользователя, компанию и членство `owner` с `audit_read=false` в одной
 транзакции. Сессии создаёт backend; пароли и пользователей Supabase вручную
 в SQL не вставлять. Повторный вход того же subject сохраняет компанию.
@@ -277,13 +303,14 @@ runner и проверки версии/dirty.
 ## Новые миграции и откат
 
 Имя файла содержит номер, название и `.up.sql`/`.down.sql`. Следующая миграция
-получает новый номер; уже применённые SQL-файлы не меняются. В текущей паре
+получает новый номер; уже применённые SQL-файлы не меняются. В обеих парах
 используются явные `BEGIN`/`COMMIT`. Операции вне транзакций, например
 `CREATE INDEX CONCURRENTLY`, требуют отдельного файла и плана восстановления.
 
-Встроенный runner выполняет только `up`. Текущий down-файл удаляет все четыре
-таблицы приложения вместе с данными, но не меняет `schema_migrations`.
-Прямое исполнение через psql оставит историю несогласованной. Откат приложения
+Встроенный runner выполняет только `up`. Down версии 2 удаляет только
+`audit_events` с журналом; down версии 1 — четыре таблицы авторизации.
+Прямое исполнение down через psql не меняет `schema_migrations` и оставит
+историю несогласованной. Откат приложения
 обычно сохраняет БД; для первой установки можно остановить API и убрать его
 маршрут из прокси, оставив данные. Разрушительный откат схемы требует отдельного
 решения, остановки всех писателей, резервной копии и внешнего golang-migrate
