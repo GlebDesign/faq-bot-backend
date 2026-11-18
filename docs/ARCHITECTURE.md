@@ -16,7 +16,7 @@ Go-модуль находится в папке `backend`. У него две �
 | `internal/handlers/dto` | Содержит структуры запросов и ответов |
 | `internal/service` | Выполняет регистрацию, вход, проверку сессий и валидацию событий аудита |
 | `internal/repository` | Читает и записывает данные через SQL |
-| `internal/models` | Описывает пользователя с правами, сессию и внутренние события аудита |
+| `internal/models` | Описывает identity, сессию, аудит и вход/результат SQL replay AI request |
 | `internal/authprovider` | Обращается к Supabase для проверки email и пароля |
 | `internal/db` | Настраивает соединения с БД и выполняет транзакции |
 | `internal/migration` | Применяет SQL-файлы и следит за версией схемы |
@@ -81,3 +81,21 @@ go build ./internal/messaging ./internal/jobs
 в `db.WithTx`: изменение и аудит подтверждаются или отменяются вместе.
 Связывание с бизнес-сервисами и авторизацией ещё не выполнено, HTTP API чтения нет.
 Полный внутренний контракт — в [AUDIT.md](AUDIT.md).
+
+## Контракт и основание чата
+
+[REST](../contracts/openapi.yaml) и [probes](../contracts/health.openapi.yaml)
+содержат схемы и fixtures; работающие операции явно отделены от проектируемых.
+DTO лежат в handlers/dto, SQL и driver errors — в repository. Новые миграции
+добавляют agents и scoped conversations/messages/message_sources/ai_requests.
+[DATABASE.md](DATABASE.md#агенты-и-диалоги) описывает FK и ограничения.
+
+`repository.AIRequests.CreateOrRead` — минимальный внутренний SQL-путь replay:
+короткая транзакция, INSERT ON CONFLICT, scoped SELECT, сравнение SHA-256,
+сохранённые ID/state/result. Он не вызывает AI, не проверяет права пользователя,
+не создаёт сообщение, не управляет переходами состояний и обращениями.
+Scope получает от будущего доверенного сервиса, а не из тела browser request.
+Этот путь пока не подключён к HTTP. Владение транзакцией создания сообщения,
+replay и будущей записи аудита необходимо определить при реализации ChatService;
+текущий helper завершает только свою транзакцию записи ai_request.
+AuditService и WriteInTx остаются отдельным существующим контрактом.

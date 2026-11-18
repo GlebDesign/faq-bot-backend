@@ -1,0 +1,121 @@
+{
+  "accounts": [
+    {
+      "account_id": "account_a",
+      "owner_id": "user_a",
+      "agent_ids": [
+        "agent_a1",
+        "agent_a2"
+      ]
+    },
+    {
+      "account_id": "account_b",
+      "owner_id": "user_b",
+      "agent_ids": [
+        "agent_b1"
+      ]
+    }
+  ],
+  "widget_scope": {
+    "account_id": "account_a",
+    "agent_id": "agent_a1",
+    "conversation_id": "conv_a1"
+  },
+  "denied_cases": [
+    {
+      "actor": "user_b",
+      "resource": "agent_a1",
+      "expected_status": 404
+    },
+    {
+      "actor": "widget_a1",
+      "resource": "agent_a1_cabinet",
+      "expected_status": 401
+    },
+    {
+      "actor": "widget_a1",
+      "resource": "agent_a2_conversation",
+      "expected_status": 404
+    },
+    {
+      "actor": "admin_without_audit_read",
+      "resource": "account_a_audit",
+      "expected_status": 403
+    }
+  ],
+  "idempotency": {
+    "operation_id": "op_demo_1",
+    "request_id": "req_demo",
+    "same_key_same_body": "replay",
+    "same_key_other_body": "idempotency_conflict",
+    "same_key_in_flight": "202 ChatOperation with original IDs"
+  },
+  "resources": {
+    "agent_a1": {
+      "account_id": "account_a",
+      "public_id": "pub_a1"
+    },
+    "agent_a2": {
+      "account_id": "account_a",
+      "public_id": "pub_a2"
+    },
+    "agent_b1": {
+      "account_id": "account_b",
+      "public_id": "pub_b1"
+    },
+    "doc_a1": {
+      "agent_id": "agent_a1"
+    },
+    "conv_a1": {
+      "agent_id": "agent_a1"
+    },
+    "conv_a2": {
+      "agent_id": "agent_a2"
+    },
+    "msg_a1": {
+      "conversation_id": "conv_a1"
+    },
+    "cite_a1": {
+      "message_id": "msg_a1",
+      "document_id": "doc_a1"
+    },
+    "coverage_a1": {
+      "agent_id": "agent_a1"
+    },
+    "job_a1": {
+      "agent_id": "agent_a1",
+      "document_id": "doc_a1"
+    },
+    "package_demo": {},
+    "package_request_a1": {
+      "account_id": "account_a",
+      "package_id": "package_demo"
+    },
+    "ticket_a1": {
+      "account_id": "account_a"
+    },
+    "attachment_a1": {
+      "ticket_id": "ticket_a1"
+    },
+    "lead_a1": {
+      "agent_id": "agent_a1",
+      "conversation_id": "conv_a1",
+      "message_id": "msg_a1"
+    },
+    "audit_a1": {
+      "account_id": "account_a",
+      "actor_id": "user_a",
+      "resource_id": "agent_a1"
+    },
+    "key_a1": {
+      "account_id": "account_a",
+      "partner_id": "partner_a1"
+    },
+    "partner_a1": {
+      "account_id": "account_a"
+    },
+    "asset_a1": {
+      "agent_id": "agent_a1"
+    }
+  }
+}

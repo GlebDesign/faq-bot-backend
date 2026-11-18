@@ -1,0 +1,961 @@
+[
+  {
+    "name": "knowledge.pending",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 200,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "pending",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "knowledge.processing",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 200,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "processing",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "knowledge.ready",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 200,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "ready",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "knowledge.failed",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 200,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "failed",
+      "error_code": "parse_failed"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "knowledge.deleting",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 200,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "deleting",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "knowledge.deleted",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 200,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "deleted",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "coverage.pending",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 200,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "pending",
+      "stale": false,
+      "results": [],
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "coverage.running",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 200,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "running",
+      "stale": false,
+      "results": [],
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "coverage.completed",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 200,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "completed",
+      "stale": false,
+      "results": [
+        {
+          "question": "Какие сроки доставки?",
+          "has_answer": true,
+          "answer": "Три дня."
+        }
+      ],
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "coverage.failed",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 200,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "failed",
+      "stale": false,
+      "results": [],
+      "error_code": "processing_failed"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "coverage.stale",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 200,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "completed",
+      "stale": true,
+      "results": [
+        {
+          "question": "Какие сроки доставки?",
+          "has_answer": true,
+          "answer": "Три дня."
+        }
+      ],
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "agent.draft",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 200,
+    "body": {
+      "id": "agent_a1",
+      "account_id": "account_a",
+      "public_id": "pub_a1",
+      "name": "Помощник",
+      "status": "draft",
+      "revision": 1,
+      "knowledge_revision": 2,
+      "active_knowledge_revision": 1,
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "public_sources_enabled": false,
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "agent.published",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 200,
+    "body": {
+      "id": "agent_a1",
+      "account_id": "account_a",
+      "public_id": "pub_a1",
+      "name": "Помощник",
+      "status": "published",
+      "revision": 1,
+      "knowledge_revision": 2,
+      "active_knowledge_revision": 1,
+      "config_revision": 1,
+      "published_config_revision": 1,
+      "public_sources_enabled": false,
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "chat.no_answer",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 200,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "no_answer",
+      "answer": "В материалах нет ответа.",
+      "has_answer": false,
+      "sources": [],
+      "remaining_requests": 99
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "chat.sources_disabled",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 200,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "completed",
+      "answer": "Доставка занимает три дня.",
+      "has_answer": true,
+      "sources": [],
+      "remaining_requests": 99
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "message.accepted",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "accepted",
+          "question": "Какие сроки доставки?",
+          "answer": null,
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "message.generating",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "generating",
+          "question": "Какие сроки доставки?",
+          "answer": null,
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "message.completed",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "completed",
+          "question": "Какие сроки доставки?",
+          "answer": "Три дня.",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "message.no_answer",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "no_answer",
+          "question": "Какие сроки доставки?",
+          "answer": "Три дня.",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "message.failed",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "failed",
+          "question": "Какие сроки доставки?",
+          "answer": null,
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "message.cancelled",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "cancelled",
+          "question": "Какие сроки доставки?",
+          "answer": null,
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "package.pending",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "status": 200,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "pending",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "package.approved",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "status": 200,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "approved",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "package.rejected",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "status": 200,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "rejected",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "package.cancelled",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "status": 200,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "cancelled",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "support.open",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "status": 200,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "open",
+      "history": [
+        {
+          "status": "open",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "support.in_progress",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "status": 200,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "in_progress",
+      "history": [
+        {
+          "status": "in_progress",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "support.resolved",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "status": 200,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "resolved",
+      "history": [
+        {
+          "status": "resolved",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "support.closed",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "status": 200,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "closed",
+      "history": [
+        {
+          "status": "closed",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "contact.new",
+    "method": "GET",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 200,
+    "body": {
+      "id": "lead_a1",
+      "agent_id": "agent_a1",
+      "conversation_id": "conv_a1",
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent_version": "draft-v1",
+      "status": "new",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "contact.in_progress",
+    "method": "GET",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 200,
+    "body": {
+      "id": "lead_a1",
+      "agent_id": "agent_a1",
+      "conversation_id": "conv_a1",
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent_version": "draft-v1",
+      "status": "in_progress",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "contact.closed",
+    "method": "GET",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 200,
+    "body": {
+      "id": "lead_a1",
+      "agent_id": "agent_a1",
+      "conversation_id": "conv_a1",
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent_version": "draft-v1",
+      "status": "closed",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "attachment.pending",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "status": 200,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "pending"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "attachment.uploaded",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "status": 200,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "uploaded"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "attachment.ready",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "status": 200,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "ready"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "attachment.rejected",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "status": 200,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "rejected"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "chat.package_limit_exhausted",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 422,
+    "body": {
+      "code": "package_limit_exhausted",
+      "message": "Синтетический пример ошибки",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "chat.ai_unavailable",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 503,
+    "body": {
+      "code": "ai_unavailable",
+      "message": "Синтетический пример ошибки",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "chat.deadline_exceeded",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 504,
+    "body": {
+      "code": "deadline_exceeded",
+      "message": "Синтетический пример ошибки",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "chat.idempotency_conflict",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 409,
+    "body": {
+      "code": "idempotency_conflict",
+      "message": "Синтетический пример ошибки",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "chat.operation_in_progress",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 202,
+    "body": {
+      "operation_id": "op_demo_1",
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "accepted"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "partner.partner_replay",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "status": 409,
+    "body": {
+      "code": "partner_replay",
+      "message": "Синтетический пример ошибки",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "partner.partner_credential_revoked",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "status": 401,
+    "body": {
+      "code": "partner_credential_revoked",
+      "message": "Синтетический пример ошибки",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "scope.cross_tenant_hidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 404,
+    "body": {
+      "code": "not_found",
+      "message": "Ресурс не найден",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "scope.widget_cannot_enter_cabinet",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 401,
+    "body": {
+      "code": "unauthenticated",
+      "message": "Требуется кабинетная сессия",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "widget.revision_conflict",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "status": 412,
+    "body": {
+      "code": "revision_conflict",
+      "message": "Версия устарела",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "widget.defaults",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/widget-settings/reset",
+    "status": 200,
+    "body": {
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "draft": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      }
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "publish.not_ready",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/publish",
+    "status": 422,
+    "body": {
+      "code": "knowledge_not_ready",
+      "message": "Нет готовой базы знаний",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  },
+  {
+    "name": "balance.empty",
+    "method": "GET",
+    "path": "/api/v1/packages/balance",
+    "status": 200,
+    "body": {
+      "account_id": "account_a",
+      "remaining_requests": 0,
+      "reserved_requests": 0,
+      "expires_at": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "kind": "independent_state_example"
+  }
+]

@@ -2,9 +2,11 @@
 
 API не создаёт таблицы при старте. Изменения схемы применяет отдельная программа
 `cmd/migrate` на golang-migrate v4. В [каталоге SQL](../backend/migrations)
-находятся пары `000001_identity` и `000002_audit` (`up.sql`/`down.sql`).
+находятся пары `000001_identity`, `000002_audit`, `000003_agents` и
+`000004_conversations` (`up.sql`/`down.sql`). Нужен PostgreSQL 15+ для
+`UNIQUE NULLS NOT DISTINCT` в миграции 4; локальные проверки — на 18.3.
 Первая создаёт `users`, `accounts`, `account_members`, `sessions`, вторая —
-`audit_events` с ограничениями и индексами. Текущая версия схемы — 2.
+`audit_events` с ограничениями и индексами. Текущая версия схемы — 4.
 Подготовка БД — в [DATABASE.md](DATABASE.md), обновление —
 в [карточке 0.0.2](upgrade_cluster/release_0.0.2.md).
 
@@ -66,7 +68,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 SELECT to_regclass('public.schema_migrations') AS history;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests')
 ORDER BY tablename;
 ```
 
@@ -78,8 +80,8 @@ runner поверх них. Если history не NULL, отдельно вып�
 SELECT version, dirty FROM public.schema_migrations;
 ```
 
-Версия 1 с dirty=false допускает обновление до 2; версия 2 с dirty=false —
-повторный запуск. Dirty=true или версия выше 2 требуют остановки и проверки
+Версии 1–3 с dirty=false допускают обновление до 4; версия 4 с dirty=false —
+повторный запуск. Dirty=true или версия выше 4 требуют остановки и проверки
 по разделу ошибок. Пустая history допускается только при отсутствии таблиц
 приложения. Существующую схему сверить с применёнными миграциями до продолжения.
 
@@ -120,8 +122,8 @@ env -u SUPABASE_URL -u SUPABASE_KEY -u AUTH_ORIGIN -u AUTH_ALLOW_INSECURE_HTTP \
 
 Ожидаются exit code 0 и JSON-лог `migrations are up to date`.
 Runner вызывает `Up()` и применяет все ожидающие миграции из указанного каталога,
-а не одну выбранную версию. На пустой БД это 000001 и 000002, на версии 1 —
-000002, на чистой версии 2 — отсутствие изменений. Не подменять каталог неполным
+а не одну выбранную версию. На пустой БД это 000001–000004, на версии 1 —
+000002–000004, на версии 2 — 000003–000004, на чистой версии 4 — отсутствие изменений. Не подменять каталог неполным
 набором SQL ради выбора одной миграции. Повторный запуск
 той же команды допустим: уже применённая миграция повторно не выполняется.
 
@@ -161,7 +163,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 ```sql
 SELECT version, dirty FROM public.schema_migrations;
 SELECT name, to_regclass('public.' || name) AS actual_table
-FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events')) AS t(name);
+FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events'), ('agents'), ('conversations'), ('messages'), ('message_sources'), ('ai_requests')) AS t(name);
 SELECT to_regclass('public.sessions_expiry_idx') AS expiry_index;
 SELECT indexname, indexdef FROM pg_indexes
 WHERE schemaname='public' AND tablename='audit_events' ORDER BY indexname;
@@ -170,11 +172,11 @@ FROM pg_constraint WHERE conrelid='public.audit_events'::regclass
 ORDER BY conname;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests')
 ORDER BY tablename;
 ```
 
-Ожидаются одна строка `version=2, dirty=false`, пять ненулевых `actual_table`,
+Ожидаются одна строка `version=4, dirty=false`, десять ненулевых `actual_table`,
 индекс сессий, шесть индексов аудита (PK, unique ключ и четыре поисковых)
 и владелец-migrator. Все ограничения должны быть валидны и соответствовать
 [000002 up](../backend/migrations/000002_audit.up.sql): PK/unique, FK компании,
@@ -182,6 +184,11 @@ CHECK scope/account/actor/entity/outcome, корреляционных поле�
 SQL проверяет форму action/entity, но не весь прикладной каталог и whitelist
 metadata из [AUDIT.md](AUDIT.md). На новой БД таблицы данных
 пусты. После повторного runner версия и `dirty` остаются такими же.
+Ограничения новых таблиц сверяются с [000003 up](../backend/migrations/000003_agents.up.sql)
+и [000004 up](../backend/migrations/000004_conversations.up.sql): account/agent и
+conversation/message composite FK, XOR visitor/member, unique public_id,
+NULLS NOT DISTINCT scope key, state/result checks. Подробности и ограничения
+источников — в [DATABASE.md](DATABASE.md#агенты-и-диалоги).
 Наличие таблиц само по себе не подтверждает историю и права API.
 
 ## Права API после миграции
@@ -199,6 +206,10 @@ GRANT SELECT, INSERT ON public.audit_events TO :"api_role";
 COMMIT;
 ```
 
+Новые таблицы пока не используются работающим HTTP API, поэтому приведённые
+Auth/audit GRANT не расширяются автоматически. Для изолированного вызова
+CreateOrRead отдельному тестовому потребителю нужны SELECT/INSERT ai_requests;
+права будущего CRUD/ChatService выдаются после реализации их запросов.
 API не нужны DDL-права, доступ к `schema_migrations` и sequences; UUID создаёт Go.
 SELECT для `accounts` можно не выдавать при строго минимальной политике:
 текущий код только вставляет в неё строки. После миграции другой ролью API
@@ -303,11 +314,15 @@ runner и проверки версии/dirty.
 ## Новые миграции и откат
 
 Имя файла содержит номер, название и `.up.sql`/`.down.sql`. Следующая миграция
-получает новый номер; уже применённые SQL-файлы не меняются. В обеих парах
+получает новый номер; уже применённые SQL-файлы не меняются. Во всех парах
 используются явные `BEGIN`/`COMMIT`. Операции вне транзакций, например
 `CREATE INDEX CONCURRENTLY`, требуют отдельного файла и плана восстановления.
 
-Встроенный runner выполняет только `up`. Down версии 2 удаляет только
+Встроенный runner выполняет только `up`. Down версии 4 удаляет ai_requests,
+message_sources, messages и conversations; down версии 3 — agents.
+Порядок обратный: сначала 4, затем 3. В новых down нет CASCADE и удаления
+identity/audit; вместе с conversations удаляется SECURITY DEFINER
+function check_conversation_member. Down версии 2 удаляет только
 `audit_events` с журналом; down версии 1 — четыре таблицы авторизации.
 Прямое исполнение down через psql не меняет `schema_migrations` и оставит
 историю несогласованной. Откат приложения

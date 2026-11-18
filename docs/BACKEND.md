@@ -156,7 +156,7 @@ UPDATE/DELETE/TRUNCATE журнала нужна также `TEST_AUDIT_ROLE`; �
 
 ## Внутренний аудит
 
-Миграция `000002_audit` добавляет журнал, текущая версия схемы — 2.
+Миграция `000002_audit` добавляет журнал; с agents и conversations текущая версия схемы — 4.
 `AuditService.WriteInTx` сохраняет событие в переданной бизнес-транзакции,
 проверяет каталог, scope/actor и whitelist metadata. Повтор сравнивается по
 серверному ключу, конфликт payload возвращает ошибку. Прикладной роли нужны
@@ -184,7 +184,7 @@ INSERT и SELECT для сравнения повторов, без UPDATE/DELET
   без `TEST_AUDIT_ROLE` подтвердил явный skip проверки прав; он не проверяет права.
 - В этих прогонах сборка и запуск контейнера не проверены: Docker daemon недоступен.
 
-Текущая повторная проверка 17.11.2026: `go test -count=1 ./...` и
+Проверка аудита 17.11.2026 до расширения схемы: `go test -count=1 ./...` и
 `go test -race -count=1 ./...` — каждый по 151 успешному случаю, 0 ошибок,
 0 пропусков с отдельной PostgreSQL 18.3 и `TEST_AUDIT_ROLE`. Форматирование
 без diff, vet, build и golangci-lint v2.1.6 прошли без замечаний.
@@ -199,3 +199,48 @@ Docker daemon повторно недоступен; Docker build/run не вы�
 Стенд, рабочие роли/backup, внешний HTTPS/proxy и login/session/logout через
 Supabase не проверены. Эти локальные результаты не заменяют приёмку стенда;
 подробности — в [карточке 0.0.2](upgrade_cluster/release_0.0.2.md#e2e-тесты).
+
+
+## REST, агенты и диалоги
+
+[Контракт REST](../contracts/README.md) версии draft.4 содержит DTO/fixtures,
+тесты refs/schema/request/response и JSON parity. Работающие Auth/probes
+проверяются через локальный HTTP server, включая HEAD, Allow и границы UTF-8.
+Остальные операции проектируются и HTTP-маршрутов пока не имеют.
+
+Миграции 3/4 добавляют агента с website/description/tombstone и scoped таблицы
+чата с состояниями и terminal result. В repository появился минимальный
+CreateOrRead AI request с SHA-256 payload и conflict/replay. Это не ChatService:
+CRUD, RBAC, отправка AI-запросов, учёт обращений, виджет, очередь и аудит этих
+операций пока не подключены. Scope, FK, revisions и ограничения sources описаны
+в [DATABASE.md](DATABASE.md#агенты-и-диалоги), применение версии 4 — в
+[MIGRATIONS.md](MIGRATIONS.md). Политики partner signature, consent, quota и
+retention требуют решений владельцев; consumer review и G01 остаются внешней
+приёмкой.
+
+Проверка пакета 17.11.2026 на отдельной PostgreSQL 18.3:
+`go test -count=1 -json ./...` и `go test -race -count=1 -json ./...` —
+каждый по 866 успешных тестов и подтестов, 0 ошибок и 0 пропущенных тестов.
+Пять пакетов без тестовых файлов отмечены Go как `[no test files]`; SQL-тесты
+выполнены с TEST_DATABASE_URL и TEST_AUDIT_ROLE. Проверены fresh/upgrade/repeat/
+down-up новых миграций, scoped replay/conflict и фактическое ожидание
+конкурентного INSERT. `go vet ./...`, golangci-lint v2.1.6 и проверка форматирования
+прошли без замечаний. Внешние проверки, перечисленные выше, этим не подтверждаются.
+
+
+18.11.2026 уточнены REST mutations/CSRF, planned 202 ChatOperation и session-scoped
+visitor history, nonblank Unicode и no-store responses. Первичная visitor session
+не участвует в token-response replay. Членство проверяется trigger при создании
+или смене actor/scope диалога; постоянного FK на membership нет, поэтому
+существующий отзыв сессии через DELETE membership сохраняет историю чата.
+CreateOrRead явно фиксирует READ COMMITTED.
+
+Итоговая проверка 18.11.2026 после исправлений: `go test -count=1 -json ./...`
+и `go test -race -count=1 -json ./...` — каждый по 1182 успешных случая,
+0 ошибок и 0 пропущенных тестов. Отдельный `go test -count=1 -json ./internal/migration`
+проверил 100 случаев. SQL выполнен на отдельной PostgreSQL 18.3 с ограниченной
+тестовой ролью; пакеты без тестовых файлов не учитываются как пропущенные тесты.
+`go vet ./...`, `golangci-lint run ./...` и `golangci-lint fmt --diff`
+прошли: 0 замечаний и пустой diff форматирования. Независимое review выполнено
+четырьмя проверками; после исправлений повторная проверка не нашла подтверждённых
+проблем. Потребительская и интеграционная приёмка остаются открытыми.

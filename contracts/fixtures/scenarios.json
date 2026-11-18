@@ -1,0 +1,210 @@
+[
+  {
+    "name": "owner-knowledge-publish",
+    "steps": [
+      {
+        "request": "createAgent.valid",
+        "response": "createAgent.success"
+      },
+      {
+        "request": "createDocument.valid",
+        "response": "createDocument.success"
+      },
+      {
+        "request": "getDocument.valid",
+        "response": "knowledge.ready"
+      },
+      {
+        "request": "publishAgent.valid",
+        "response": "publishAgent.success"
+      }
+    ],
+    "links": [
+      [
+        0,
+        "response",
+        "/body/id",
+        1,
+        "request",
+        "/path_agent_id"
+      ],
+      [
+        1,
+        "response",
+        "/body/id",
+        2,
+        "response",
+        "/body/id"
+      ],
+      [
+        2,
+        "response",
+        "/body/knowledge_revision",
+        3,
+        "request",
+        "/body/knowledge_revision"
+      ],
+      [
+        0,
+        "response",
+        "/body/id",
+        3,
+        "response",
+        "/body/id"
+      ]
+    ]
+  },
+  {
+    "name": "visitor-no-answer-contact",
+    "steps": [
+      {
+        "request": "createWidgetSession.valid",
+        "response": "createWidgetSession.success"
+      },
+      {
+        "request": "sendWidgetMessage.valid",
+        "response": "chat.no_answer"
+      },
+      {
+        "request": "createContactRequest.valid",
+        "response": "createContactRequest.success"
+      },
+      {
+        "request": "getContactRequest.valid",
+        "response": "getContactRequest.success"
+      }
+    ],
+    "links": [
+      [
+        0,
+        "response",
+        "/body/conversation_id",
+        1,
+        "request",
+        "/body/conversation_id"
+      ],
+      [
+        1,
+        "response",
+        "/body/message_id",
+        2,
+        "request",
+        "/body/message_id"
+      ],
+      [
+        2,
+        "response",
+        "/body/request_id",
+        3,
+        "response",
+        "/body/id"
+      ],
+      [
+        1,
+        "response",
+        "/body/conversation_id",
+        3,
+        "response",
+        "/body/conversation_id"
+      ]
+    ]
+  },
+  {
+    "name": "support-manual-package",
+    "steps": [
+      {
+        "request": "createSupportTicket.valid",
+        "response": "createSupportTicket.success"
+      },
+      {
+        "request": "getSupportTicket.valid",
+        "response": "getSupportTicket.success"
+      },
+      {
+        "request": "createPackageRequest.valid",
+        "response": "createPackageRequest.success"
+      },
+      {
+        "request": "decidePackageRequest.valid",
+        "response": "decidePackageRequest.success"
+      }
+    ],
+    "links": [
+      [
+        0,
+        "response",
+        "/body/id",
+        1,
+        "response",
+        "/body/id"
+      ],
+      [
+        2,
+        "response",
+        "/body/id",
+        3,
+        "response",
+        "/body/id"
+      ],
+      [
+        2,
+        "request",
+        "/body/package_id",
+        2,
+        "response",
+        "/body/package_id"
+      ],
+      [
+        3,
+        "request",
+        "/body/status",
+        3,
+        "response",
+        "/body/status"
+      ]
+    ]
+  },
+  {
+    "name": "partner-bootstrap",
+    "steps": [
+      {
+        "request": "issuePartnerCredential.valid",
+        "response": "issuePartnerCredential.success"
+      },
+      {
+        "request": "createPartnerSession.valid",
+        "response": "createPartnerSession.success"
+      },
+      {
+        "request": "sendWidgetMessage.valid",
+        "response": "sendWidgetMessage.success"
+      }
+    ],
+    "links": [
+      [
+        0,
+        "request",
+        "/body/agent_ids/0",
+        0,
+        "response",
+        "/body/credential/agent_ids/0"
+      ],
+      [
+        1,
+        "request",
+        "/body/agent_public_id",
+        1,
+        "response",
+        "/trusted_agent_public_id"
+      ],
+      [
+        1,
+        "response",
+        "/body/conversation_id",
+        2,
+        "request",
+        "/body/conversation_id"
+      ]
+    ]
+  }
+]

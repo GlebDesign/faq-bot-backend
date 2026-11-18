@@ -14,12 +14,22 @@ backend/tmp/
 coverage.out
 AGENTS.md
 README.md
-contracts/
+contracts/*
+!contracts/openapi.yaml
+!contracts/health.openapi.yaml
+!contracts/README.md
+!contracts/fixtures/
+contracts/fixtures/*
+!contracts/fixtures/identities.json
+!contracts/fixtures/requests.json
+!contracts/fixtures/responses.json
+!contracts/fixtures/schemas.json
+!contracts/fixtures/flows.json
+!contracts/fixtures/scenarios.json
+contracts/amqp/
 backend/internal/jobs/
 backend/internal/messaging/
 backend/internal/safeerr/
-backend/internal/handlers/dto/
-backend/internal/handlers/contract_test.go
 
 .local/
 .agents/

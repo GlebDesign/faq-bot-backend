@@ -26,6 +26,31 @@ Go API использует стандартный `net/http.ServeMux`. Точк
 восстановление пароля через Go API не реализованы. Форматы, коды, cookie,
 Origin/CSRF и примеры всех Auth-запросов — в [AUTH.md](AUTH.md).
 
+## REST-схемы
+
+[openapi.yaml](../contracts/openapi.yaml) `1.0.0-draft.4` содержит Auth и
+проектируемые operations кабинета/виджета/партнёра. `x-implementation-status`
+отмечает доступность; добавление схемы не регистрирует маршрут.
+[health.openapi.yaml](../contracts/health.openapi.yaml) описывает probes.
+[Пояснения контракта](../contracts/README.md) фиксируют required/nullability,
+pagination, revisions, idempotency и открытые продуктовые решения.
+
+В Auth 405 содержит Allow; HEAD не поддерживается и получает 405 без тела по
+правилам net/http. Logout допускает предварительную сессию с её CSRF и Origin.
+Session/logout не имеют искусственных 400/429 ответов; session использует
+GET, logout — POST. Ошибки provider 502/503 относятся к login/register.
+Фактические ограничения credential/body измеряются в байтах UTF-8 через
+x-maxBytes/x-maxBodyBytes, а не maxLength; byte cases проверяются HTTP-тестом.
+NoopAuthentication в тестах fixtures валидирует формат, а не tenant RBAC.
+
+Кабинетные изменения требуют Origin и CSRF; feedback также допускает отдельную
+WidgetSession без кабинетных заголовков. Незавершённый чат описан ответом
+`202 ChatOperation`, конфликт payload — ответом 409. Первичная выдача visitor
+session исключена из replay ответов с bearer token. Проектируемый
+`GET /api/v1/widget/messages` читает историю собственного диалога из session с
+limit/cursor. Чувствительный JSON требует `Cache-Control: no-store`.
+Эти операции ещё не подключены к HTTP-серверу.
+
 ## Проверки состояния
 
 Для health-запросов не нужны тело, cookie, Origin, CSRF или специальные заголовки.

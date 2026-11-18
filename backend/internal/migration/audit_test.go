@@ -68,8 +68,17 @@ func TestAuditMigrationUpgradeRepeatAndDown(t *testing.T) {
 	if _, err := pool.Exec("INSERT INTO accounts(id) VALUES ($1)", auditAccount); err != nil {
 		t.Fatal(err)
 	}
+	for _, name := range []string{"000002_audit.up.sql", "000002_audit.down.sql"} {
+		data, err := os.ReadFile(filepath.Join("../../migrations", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, name), data, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
 	for range 2 {
-		if err := Apply(context.Background(), dsn, "../../migrations"); err != nil {
+		if err := Apply(context.Background(), dsn, dir); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -94,7 +103,7 @@ func TestAuditMigrationUpgradeRepeatAndDown(t *testing.T) {
 	if err != nil {
 		t.Fatal(db.WrapError("initialize audit migration driver", errors.Join(err, conn.Close())))
 	}
-	path, err := filepath.Abs("../../migrations")
+	path, err := filepath.Abs(dir)
 	if err != nil {
 		t.Fatal(db.WrapError("resolve audit migration path", errors.Join(err, driver.Close())))
 	}
