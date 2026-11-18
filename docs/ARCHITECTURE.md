@@ -14,9 +14,9 @@ Go-модуль находится в папке `backend`. У него две �
 | `internal/config` | Читает и проверяет переменные окружения |
 | `internal/handlers` | Принимает HTTP-запросы и формирует JSON-ответы |
 | `internal/handlers/dto` | Содержит структуры запросов и ответов |
-| `internal/service` | Выполняет регистрацию, вход, проверку сессий и валидацию событий аудита |
+| `internal/service` | Выполняет Auth, tenant/RBAC проверки, CRUD агентов и валидацию аудита |
 | `internal/repository` | Читает и записывает данные через SQL |
-| `internal/models` | Описывает identity, сессию, аудит и вход/результат SQL replay AI request |
+| `internal/models` | Описывает identity, сессию, агента, аудит и SQL replay |
 | `internal/authprovider` | Обращается к Supabase для проверки email и пароля |
 | `internal/db` | Настраивает соединения с БД и выполняет транзакции |
 | `internal/migration` | Применяет SQL-файлы и следит за версией схемы |
@@ -79,7 +79,8 @@ go build ./internal/messaging ./internal/jobs
 `repository.Audit` вставляет запись и сравнивает повтор по серверному ключу.
 Вызывающий бизнес-сервис передаёт свою `*sql.Tx` и возвращает ошибку аудита
 в `db.WithTx`: изменение и аудит подтверждаются или отменяются вместе.
-Связывание с бизнес-сервисами и авторизацией ещё не выполнено, HTTP API чтения нет.
+CRUD агентов вызывает аудит в общей бизнес-транзакции. Auth пока не записывает
+свои события; HTTP API чтения аудита нет.
 Полный внутренний контракт — в [AUDIT.md](AUDIT.md).
 
 ## Контракт и основание чата
@@ -99,3 +100,20 @@ Scope получает от будущего доверенного сервис
 replay и будущей записи аудита необходимо определить при реализации ChatService;
 текущий helper завершает только свою транзакцию записи ai_request.
 AuditService и WriteInTx остаются отдельным существующим контрактом.
+
+## Изолированный CRUD агентов
+
+`handlers.AgentHandler` проверяет транспорт, JSON, Origin/CSRF и получает
+`service.Scope` через `Auth.Scope`. Поля scope закрыты; getters возвращают
+значения. Service повторяет RBAC owner/admin; repository всегда ограничивает
+объектный SQL парой account+UUID и фильтрует deleted_at. Запрос public_id не
+предоставляет кабинетные права. HMAC cursor включает account/resource/sort.
+
+`service.Agents` владеет `db.WithTx`: резервирование SQL replay, изменение,
+`AuditService.WriteInTx` и сохранение результата выполняются в одной транзакции.
+Повтор резервирования сериализуется уникальным scope ключом в READ COMMITTED.
+PATCH блокирует scoped строку, сравнивает revision и повышает её атомарно.
+DELETE пишет tombstone и вызывает потребительский `AgentCleanup.RequestInTx`.
+Production adapter `repository.Agents` сохраняет durable pending запрос в той же tx;
+это узкая таблица для агентов, без общего job framework и фоновых горутин.
+Worker очистки и внешние Storage/MQ/AI операции отсутствуют.

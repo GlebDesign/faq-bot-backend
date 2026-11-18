@@ -3,7 +3,7 @@
 [openapi.yaml](openapi.yaml) версии `1.0.0-draft.4` описывает кабинет, виджет и
 партнёрское подключение. [health.openapi.yaml](health.openapi.yaml) описывает
 реальные проверки процесса. `x-implementation-status: implemented` отмечает
-работающий Auth; `planned` — проектируемые операции. Наличие схемы не создаёт
+работающие Auth и пять CRUD endpoints агентов; `planned` — проектируемые операции. Наличие схемы не создаёт
 HTTP endpoint. Полный список работающих маршрутов — [HTTP.md](../docs/HTTP.md).
 
 [Fixtures](fixtures/identities.json) содержат только синтетические данные: две
@@ -84,3 +84,23 @@ tenant/agent связи и continuity identity/revisions; это форматн�
 не доказательство runtime RBAC, signature protocol или продуктовой оркестрации.
 Name/message отвергают весь набор Unicode White_Space-only; содержательный текст
 не нормализуется, значимые пробелы сохраняются.
+
+CRUD агентов реализован для owner/admin текущей компании: create/list/get/update/delete.
+PATCH требует всю тройку полей и quoted If-Match; missing/null и неизвестные поля
+отклоняются. Общий технический body guard POST/PATCH — 1048576 байт UTF-8.
+Name измеряется в Unicode символах; website/description — обычный текст, без
+сетевого чтения. Scope SQL — account+UUID, public_id не заменяет UUID кабинета.
+
+Idempotency-Key для агентов обязателен; scope account+actor+operation+resource.
+PATCH включает If-Match в hash и читает replay до stale revision. Все повторы
+заново проверяют Session/membership/роль. DELETE не требует If-Match и возвращает
+202 Job pending только после tombstone+audit+durable cleanup request. Worker
+очистки отсутствует. Новый ключ DELETE tombstone даёт 404. GET cross-site запрещён;
+mutations требуют точный Origin и constant-time CSRF. Пределы limit — реальные
+1..100/default20; HMAC cursor привязан к account/resource/sort и общему AGENT_CURSOR_KEY.
+Проверки двух tenant и rollback выполняются через настоящий router и PostgreSQL;
+fixtures сами по себе остаются проверкой формата, а внешняя consumer/G приёмка pending.
+
+Строки агента с NUL и JSON с непарными UTF-16 surrogate escapes отклоняются
+с 400 до SQL. Корректные surrogate pairs, literal U+FFFD и исходный Unicode
+сохраняются без нормализации. DELETE проверяет фактическое пустое тело, включая chunked.

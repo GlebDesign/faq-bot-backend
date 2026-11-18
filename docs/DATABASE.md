@@ -42,7 +42,7 @@ psql "$DATABASE_URL" -c 'SELECT 1;'
 psql "$DATABASE_URL" -c 'SELECT version, dirty FROM schema_migrations;'
 ```
 
-После применения всех миграций ожидается `version=4`, `dirty=false`.
+После применения всех миграций ожидается `version=5`, `dirty=false`.
 Для production следует разделить роли: migrator меняет схему, API выполняет
 только нужные запросы к данным. Автоматического создания ролей в проекте нет.
 Роли API достаточно `CONNECT` к БД, `USAGE` схемы, `SELECT, INSERT` для `users`,
@@ -50,6 +50,9 @@ psql "$DATABASE_URL" -c 'SELECT version, dirty FROM schema_migrations;'
 Для `audit_events` нужны `SELECT, INSERT`: SELECT сравнивает повтор по ключу,
 UPDATE/DELETE/TRUNCATE запрещены. Прав на изменение схемы и доступ к
 `schema_migrations` API не требуется.
+CRUD агентов также требует `SELECT, INSERT, UPDATE` для `agents` и
+`agent_operations`, `INSERT` для `agent_cleanup_requests`. Удаление строк
+этих таблиц API не требуется: DELETE агента сохраняет tombstone.
 UUID создаёт Go, последовательности и расширения PostgreSQL миграция не использует.
 Готовый SQL и проверка прав находятся в [инструкции наката миграций](MIGRATIONS.md).
 В ней используется схема `public`: мигратор и API должны видеть одни таблицы
@@ -160,15 +163,17 @@ SELECT и запреты UPDATE/DELETE/TRUNCATE с SQLSTATE 42501. Схема и
 `deleted_at`, остальные состояния запрещают его; timestamp не раньше создания.
 Partial index исключает tombstones из обычного списка. Потребитель обязан сам
 фильтровать tombstones и отклонять публичные сессии удалённого агента: миграция
-не реализует HTTP CRUD, завершение сессий и очистку данных.
+сама не реализует HTTP CRUD, завершение сессий и очистку данных. CRUD агентов
+фильтрует tombstones; widget/chat session paths пока отсутствуют.
 
 Настройки представлены явным `public_sources_enabled`, без произвольного JSON.
 `revision` нужен для If-Match, knowledge/active_knowledge и config/published_config
 разделяют редактируемую и доступную версию. Active не превышает knowledge,
 published_config не превышает config; опубликованный агент требует ненулевые
-active/published версии. Это локальные структурные инварианты. Механизм
-монотонного увеличения revisions и управление snapshot реализуют последующие
-сервисы; одно UPDATE само по себе их не обеспечивает. WidgetConfig/media имеют
+active/published версии. Это локальные структурные инварианты. CRUD агентов
+атомарно повышает revision при PATCH/DELETE; knowledge/config revisions и
+управление snapshots относятся к последующим сервисам. Одно произвольное UPDATE
+само по себе их не обеспечивает. WidgetConfig/media имеют
 REST-схемы, но SQL-хранилище полного оформления сюда не входит.
 
 [Миграция 4](../backend/migrations/000004_conversations.up.sql) связывает каждый
@@ -231,3 +236,23 @@ default repeatable read. Name и message требуют символ вне по
 White_Space, совпадающего с Go strings.TrimSpace. SQL btrim с явным набором
 символов и cross-engine regexp в OpenAPI отвергают пробельные строки, сохраняя
 исходные пробелы внутри содержательного текста и значимый payload.
+
+## Replay и удаление агентов
+
+[Миграция 5](../backend/migrations/000005_agent_operations.up.sql) добавляет
+agent_operations и agent_cleanup_requests, не меняя миграции 1–4. Уникальный ключ
+операции — account_id+actor_id+operation+resource+key_hash. В БД сохраняется
+SHA-256 ключа и payload, серверный UUID операции и исходный JSON результата.
+Create использует пустой resource, update/delete — UUID агента. READ COMMITTED,
+INSERT ON CONFLICT и scoped SELECT FOR UPDATE сериализуют конкурентный replay.
+Сервис завершает запись только вместе с изменением и аудитом; rollback не оставляет
+незавершённой replay записи. Результат — внутренние данные, не browser input.
+
+agent_cleanup_requests ссылается составным FK на точную delete operation: UUID,
+account, operation=delete и resource=agent UUID. Отдельный account+agent FK
+сохраняет принадлежность агента. Generated operation/resource нельзя подменить. Статус пока
+только pending; уникальность account+agent исключает вторую заявку. Ошибка вставки
+отменяет tombstone, audit и replay. Это durable заявка без worker; CASCADE,
+физическая очистка и назначенная retention политика отсутствуют. Replay результат
+может содержать прежнюю версию агента после нового редактирования/удаления;
+он доступен только тому же actor после новой проверки текущего membership.

@@ -26,7 +26,7 @@ func chatDatabase(t *testing.T) *sql.DB {
 	if err := Apply(context.Background(), dsn, "../../migrations"); err != nil {
 		t.Fatal(err)
 	}
-	schemaVersion(t, pool, 4)
+	schemaVersion(t, pool, 5)
 	for _, n := range []int{1, 2} {
 		if _, err := pool.Exec("INSERT INTO accounts(id) VALUES ($1)", chatID(n)); err != nil {
 			t.Fatal(db.WrapError("create chat account", err))

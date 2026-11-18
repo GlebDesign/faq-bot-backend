@@ -2,11 +2,11 @@
 
 API не создаёт таблицы при старте. Изменения схемы применяет отдельная программа
 `cmd/migrate` на golang-migrate v4. В [каталоге SQL](../backend/migrations)
-находятся пары `000001_identity`, `000002_audit`, `000003_agents` и
-`000004_conversations` (`up.sql`/`down.sql`). Нужен PostgreSQL 15+ для
+находятся пары `000001_identity`, `000002_audit`, `000003_agents`,
+`000004_conversations` и `000005_agent_operations` (`up.sql`/`down.sql`). Нужен PostgreSQL 15+ для
 `UNIQUE NULLS NOT DISTINCT` в миграции 4; локальные проверки — на 18.3.
 Первая создаёт `users`, `accounts`, `account_members`, `sessions`, вторая —
-`audit_events` с ограничениями и индексами. Текущая версия схемы — 4.
+`audit_events` с ограничениями и индексами. Текущая версия схемы — 5.
 Подготовка БД — в [DATABASE.md](DATABASE.md), обновление —
 в [карточке 0.0.2](upgrade_cluster/release_0.0.2.md).
 
@@ -68,7 +68,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 SELECT to_regclass('public.schema_migrations') AS history;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests','agent_operations','agent_cleanup_requests')
 ORDER BY tablename;
 ```
 
@@ -80,8 +80,8 @@ runner поверх них. Если history не NULL, отдельно вып�
 SELECT version, dirty FROM public.schema_migrations;
 ```
 
-Версии 1–3 с dirty=false допускают обновление до 4; версия 4 с dirty=false —
-повторный запуск. Dirty=true или версия выше 4 требуют остановки и проверки
+Версии 1–4 с dirty=false допускают обновление до 5; версия 5 с dirty=false —
+повторный запуск. Dirty=true или версия выше 5 требуют остановки и проверки
 по разделу ошибок. Пустая history допускается только при отсутствии таблиц
 приложения. Существующую схему сверить с применёнными миграциями до продолжения.
 
@@ -115,15 +115,15 @@ percent-encoded пароль и согласованные параметры TL
 
 ```sh
 cd backend
-env -u SUPABASE_URL -u SUPABASE_KEY -u AUTH_ORIGIN -u AUTH_ALLOW_INSECURE_HTTP \
+env -u SUPABASE_URL -u SUPABASE_KEY -u AUTH_ORIGIN -u AUTH_ALLOW_INSECURE_HTTP -u AGENT_CURSOR_KEY \
   APP_ENV=production DATABASE_URL="$MIGRATOR_DATABASE_URL" \
   MIGRATIONS_PATH=./migrations go run ./cmd/migrate
 ```
 
 Ожидаются exit code 0 и JSON-лог `migrations are up to date`.
 Runner вызывает `Up()` и применяет все ожидающие миграции из указанного каталога,
-а не одну выбранную версию. На пустой БД это 000001–000004, на версии 1 —
-000002–000004, на версии 2 — 000003–000004, на чистой версии 4 — отсутствие изменений. Не подменять каталог неполным
+а не одну выбранную версию. На пустой БД это 000001–000005, на версии 1 —
+000002–000005, на версии 2 — 000003–000005, на версии 4 — 000005, на чистой версии 5 — отсутствие изменений. Не подменять каталог неполным
 набором SQL ради выбора одной миграции. Повторный запуск
 той же команды допустим: уже применённая миграция повторно не выполняется.
 
@@ -163,7 +163,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 ```sql
 SELECT version, dirty FROM public.schema_migrations;
 SELECT name, to_regclass('public.' || name) AS actual_table
-FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events'), ('agents'), ('conversations'), ('messages'), ('message_sources'), ('ai_requests')) AS t(name);
+FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events'), ('agents'), ('conversations'), ('messages'), ('message_sources'), ('ai_requests'), ('agent_operations'), ('agent_cleanup_requests')) AS t(name);
 SELECT to_regclass('public.sessions_expiry_idx') AS expiry_index;
 SELECT indexname, indexdef FROM pg_indexes
 WHERE schemaname='public' AND tablename='audit_events' ORDER BY indexname;
@@ -172,11 +172,11 @@ FROM pg_constraint WHERE conrelid='public.audit_events'::regclass
 ORDER BY conname;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests','agent_operations','agent_cleanup_requests')
 ORDER BY tablename;
 ```
 
-Ожидаются одна строка `version=4, dirty=false`, десять ненулевых `actual_table`,
+Ожидаются одна строка `version=5, dirty=false`, двенадцать ненулевых `actual_table`,
 индекс сессий, шесть индексов аудита (PK, unique ключ и четыре поисковых)
 и владелец-migrator. Все ограничения должны быть валидны и соответствовать
 [000002 up](../backend/migrations/000002_audit.up.sql): PK/unique, FK компании,
@@ -185,7 +185,8 @@ SQL проверяет форму action/entity, но не весь прикла
 metadata из [AUDIT.md](AUDIT.md). На новой БД таблицы данных
 пусты. После повторного runner версия и `dirty` остаются такими же.
 Ограничения новых таблиц сверяются с [000003 up](../backend/migrations/000003_agents.up.sql)
-и [000004 up](../backend/migrations/000004_conversations.up.sql): account/agent и
+[000004 up](../backend/migrations/000004_conversations.up.sql) и
+[000005 up](../backend/migrations/000005_agent_operations.up.sql): account/agent и
 conversation/message composite FK, XOR visitor/member, unique public_id,
 NULLS NOT DISTINCT scope key, state/result checks. Подробности и ограничения
 источников — в [DATABASE.md](DATABASE.md#агенты-и-диалоги).
@@ -203,13 +204,16 @@ GRANT SELECT, INSERT ON public.users, public.accounts, public.account_members TO
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO :"api_role";
 REVOKE UPDATE, DELETE, TRUNCATE ON public.audit_events FROM :"api_role";
 GRANT SELECT, INSERT ON public.audit_events TO :"api_role";
+GRANT SELECT, INSERT, UPDATE ON public.agents, public.agent_operations TO :"api_role";
+GRANT INSERT ON public.agent_cleanup_requests TO :"api_role";
 COMMIT;
 ```
 
-Новые таблицы пока не используются работающим HTTP API, поэтому приведённые
-Auth/audit GRANT не расширяются автоматически. Для изолированного вызова
+Эти права покрывают Auth, аудит и CRUD агентов. UPDATE agent_operations нужен
+для SELECT FOR UPDATE и сохранения результата; INSERT cleanup — для pending
+заявки в общей tx. API не получает DELETE/TRUNCATE этих таблиц. Для изолированного
 CreateOrRead отдельному тестовому потребителю нужны SELECT/INSERT ai_requests;
-права будущего CRUD/ChatService выдаются после реализации их запросов.
+права будущего ChatService пока не выдаются.
 API не нужны DDL-права, доступ к `schema_migrations` и sequences; UUID создаёт Go.
 SELECT для `accounts` можно не выдавать при строго минимальной политике:
 текущий код только вставляет в неё строки. После миграции другой ролью API
@@ -245,6 +249,14 @@ SELECT
   has_table_privilege(current_user,'public.audit_events','UPDATE') AS audit_update,
   has_table_privilege(current_user,'public.audit_events','DELETE') AS audit_delete,
   has_table_privilege(current_user,'public.audit_events','TRUNCATE') AS audit_truncate;
+SELECT
+  (has_table_privilege(current_user,'public.agents','SELECT')
+   AND has_table_privilege(current_user,'public.agents','INSERT')
+   AND has_table_privilege(current_user,'public.agents','UPDATE')) AS agents_access,
+  (has_table_privilege(current_user,'public.agent_operations','SELECT')
+   AND has_table_privilege(current_user,'public.agent_operations','INSERT')
+   AND has_table_privilege(current_user,'public.agent_operations','UPDATE')) AS agent_operations_access,
+  has_table_privilege(current_user,'public.agent_cleanup_requests','INSERT') AS cleanup_insert;
 SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls
 FROM pg_roles WHERE rolname=current_user;
 SELECT has_schema_privilege(current_user,'public','CREATE') AS schema_create;
@@ -252,7 +264,7 @@ SELECT tablename FROM pg_tables
 WHERE schemaname='public' AND tableowner=current_user;
 ```
 
-Ожидаются роль API, целевая БД, схема `public`, шесть положительных проверок
+Ожидаются роль API, целевая БД, схема `public`, шесть исходных и три новых положительных проверки
 доступа, audit_update/audit_delete/audit_truncate=false, четыре административных флага `false`, `schema_create=false` и отсутствие таблиц
 во владении API. При другом результате администратор проверяет унаследованные
 привилегии и роли. Эти запросы не меняют grants и не заменяют пробный вход:
@@ -318,9 +330,10 @@ runner и проверки версии/dirty.
 используются явные `BEGIN`/`COMMIT`. Операции вне транзакций, например
 `CREATE INDEX CONCURRENTLY`, требуют отдельного файла и плана восстановления.
 
-Встроенный runner выполняет только `up`. Down версии 4 удаляет ai_requests,
+Встроенный runner выполняет только `up`. Down версии 5 удаляет cleanup requests
+и replay агентов; их сохранённые ключи и результаты теряются. Down версии 4 удаляет ai_requests,
 message_sources, messages и conversations; down версии 3 — agents.
-Порядок обратный: сначала 4, затем 3. В новых down нет CASCADE и удаления
+Порядок обратный: сначала 5, затем 4 и 3. В новых down нет CASCADE и удаления
 identity/audit; вместе с conversations удаляется SECURITY DEFINER
 function check_conversation_member. Down версии 2 удаляет только
 `audit_events` с журналом; down версии 1 — четыре таблицы авторизации.

@@ -243,20 +243,23 @@ paths:
   "/api/v1/agents":
     post:
       operationId: createAgent
-      x-implementation-status: planned
+      x-maxBodyBytes: 1048576
+      x-implementation-status: implemented
       summary: Создать проект
       tags:
-        - member
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+        - owner_or_admin
+      description: Доступ owner/admin текущей компании из проверенной cookie-сессии. audit.read не меняет CRUD права; bearer, public_id и account_id/tenant_id из запроса не задают scope. Чужой UUID и tombstone возвращают 404.
       security:
         - CabinetIdentity: []
-      x-permission: member
+      x-permission: owner_or_admin
       parameters:
         - $ref: '#/components/parameters/RequestID'
         - $ref: '#/components/parameters/IdempotencyKey'
         - $ref: '#/components/parameters/CSRFToken'
         - $ref: '#/components/parameters/AuthOrigin'
       responses:
+        '405':
+          description: Метод не поддерживается; HEAD без тела, Allow содержит разрешённые методы ресурса.
         '201':
           "$ref": "#/components/responses/Agent"
         '400':
@@ -289,19 +292,22 @@ paths:
               description: Ответы на вопросы компании
     get:
       operationId: listAgents
-      x-implementation-status: planned
+      x-reject-unknown-query-parameters: true
+      x-implementation-status: implemented
       summary: Проекты
       tags:
-        - member
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+        - owner_or_admin
+      description: Доступ owner/admin текущей компании из проверенной cookie-сессии. audit.read не меняет CRUD права; bearer, public_id и account_id/tenant_id из запроса не задают scope. Чужой UUID и tombstone возвращают 404.
       security:
         - CabinetIdentity: []
-      x-permission: member
+      x-permission: owner_or_admin
       parameters:
         - "$ref": "#/components/parameters/RequestID"
         - "$ref": "#/components/parameters/Limit"
         - "$ref": "#/components/parameters/Cursor"
       responses:
+        '405':
+          description: Метод не поддерживается; HEAD без тела, Allow содержит разрешённые методы ресурса.
         '200':
           "$ref": "#/components/responses/AgentPage"
         '400':
@@ -319,14 +325,14 @@ paths:
   "/api/v1/agents/{id}":
     get:
       operationId: getAgent
-      x-implementation-status: planned
+      x-implementation-status: implemented
       summary: Агент
       tags:
-        - member
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+        - owner_or_admin
+      description: Доступ owner/admin текущей компании из проверенной cookie-сессии. audit.read не меняет CRUD права; bearer, public_id и account_id/tenant_id из запроса не задают scope. Чужой UUID и tombstone возвращают 404.
       security:
         - CabinetIdentity: []
-      x-permission: member
+      x-permission: owner_or_admin
       parameters:
         - "$ref": "#/components/parameters/RequestID"
         - name: id
@@ -338,6 +344,8 @@ paths:
             maxLength: 80
             pattern: "^[A-Za-z0-9_-]+$"
       responses:
+        '405':
+          description: Метод не поддерживается; HEAD без тела, Allow содержит разрешённые методы ресурса.
         '200':
           "$ref": "#/components/responses/AgentVersioned"
         '400':
@@ -354,11 +362,12 @@ paths:
           "$ref": "#/components/responses/500"
     patch:
       operationId: updateAgent
-      x-implementation-status: planned
-      summary: Переименовать агента
+      x-maxBodyBytes: 1048576
+      x-implementation-status: implemented
+      summary: Изменить агента
       tags:
         - owner_or_admin
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+      description: Доступ owner/admin текущей компании из проверенной cookie-сессии. audit.read не меняет CRUD права; bearer, public_id и account_id/tenant_id из запроса не задают scope. Чужой UUID и tombstone возвращают 404.
       security:
         - CabinetIdentity: []
       x-permission: owner_or_admin
@@ -377,6 +386,8 @@ paths:
         - $ref: '#/components/parameters/CSRFToken'
         - $ref: '#/components/parameters/AuthOrigin'
       responses:
+        '405':
+          description: Метод не поддерживается; HEAD без тела, Allow содержит разрешённые методы ресурса.
         '200':
           "$ref": "#/components/responses/AgentVersioned"
         '400':
@@ -411,11 +422,12 @@ paths:
               description: Ответы на вопросы компании
     delete:
       operationId: deleteAgent
-      x-implementation-status: planned
+      x-cleanup-status: durable-pending
+      x-implementation-status: implemented
       summary: Удалить агента
       tags:
         - owner_or_admin
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+      description: Доступ owner/admin текущей компании из проверенной cookie-сессии. audit.read не меняет CRUD права; bearer, public_id и account_id/tenant_id из запроса не задают scope. Чужой UUID и tombstone возвращают 404.
       security:
         - CabinetIdentity: []
       x-permission: owner_or_admin
@@ -433,6 +445,8 @@ paths:
         - $ref: '#/components/parameters/CSRFToken'
         - $ref: '#/components/parameters/AuthOrigin'
       responses:
+        '405':
+          description: Метод не поддерживается; HEAD без тела, Allow содержит разрешённые методы ресурса.
         '202':
           "$ref": "#/components/responses/Job"
         '400':
@@ -3013,6 +3027,7 @@ components:
         description: Ответы на основе базы знаний компании
         unit: requests
     AgentCreate:
+      description: Все три поля обязательны, null, NUL, непарные UTF-16 escapes и неизвестные поля запрещены. Имя 1..100 Unicode символов и не только White_Space; строки не нормализуются. website — обычный текст, без URL/network проверки. Общий технический предел тела 1048576 байт UTF-8.
       type: object
       additionalProperties: false
       required:
@@ -3022,20 +3037,24 @@ components:
       properties:
         name:
           type: string
+          not: {pattern: "\\x00"}
           minLength: 1
           maxLength: 100
           pattern: "[^\t\n\v\f\r \N             \L\P  　]"
         website:
           type: string
+          not: {pattern: "\\x00"}
           description: Сайт компании; пустая строка означает, что он не задан. URL не предоставляет права.
         description:
           type: string
+          not: {pattern: "\\x00"}
           description: Описание агента; пустая строка допустима.
       example:
         website: https://company.example.invalid
         description: Ответы на вопросы компании
         name: Помощник
     AgentUpdate:
+      description: NUL и непарные UTF-16 escapes запрещены; корректные surrogate pairs и literal U+FFFD сохраняются. Полная тройка name/website/description обязательна; пропуск и null отклоняются, пустые website/description допустимы. PATCH повышает revision; knowledge/config revisions не меняет. Replay проверяется до If-Match stale check; If-Match входит в payload hash. Общий технический предел тела 1048576 байт UTF-8.
       type: object
       additionalProperties: false
       required:
@@ -3045,14 +3064,17 @@ components:
       properties:
         name:
           type: string
+          not: {pattern: "\\x00"}
           minLength: 1
           maxLength: 100
           pattern: "[^\t\n\v\f\r \N             \L\P  　]"
         website:
           type: string
+          not: {pattern: "\\x00"}
           description: Сайт компании; пустая строка означает, что он не задан. URL не предоставляет права.
         description:
           type: string
+          not: {pattern: "\\x00"}
           description: Описание агента; пустая строка допустима.
       example:
         website: https://company.example.invalid
@@ -5183,7 +5205,7 @@ components:
         minLength: 1
         maxLength: 128
         pattern: "^[A-Za-z0-9_-]+$"
-      description: Проектируемые бизнес-операции повторяются только после новой проверки прав. Для чата scope — доверенные account+agent+visitor/member+operation; conversation_id, текст message входят в SHA-256 значимого payload; серверные candidate ID и stream как способ доставки не меняют операцию. Тот же key/payload возвращает исходный operation ID, state и terminal result; другой payload — 409 idempotency_conflict. Незавершённая операция возвращает сохранённый state без повторной генерации; проектируемый HTTP для accepted/generating использует 202 ChatOperation и Retry-After. Для остальных операций scope — account+actor+operation+resource. Срок хранения replay и правила списания, резервирования и возврата обращений требуют BE-029/SRE-027. Auth исключён. Первичная выдача widget session исключена; token-response replay не выполняется.
+      description: CRUD агентов повторяет проверку cookie-сессии и роли до SQL replay. Scope — account+actor+operation+resource; результат и ID исходные, конфликт payload — 409. PATCH включает If-Match в hash и проверяет replay до устаревшей revision. DELETE не требует If-Match; 202 Job pending означает durable cleanup request и tombstone в одной транзакции с аудитом, без запущенного worker; новый ключ для tombstone возвращает 404. Проектируемые бизнес-операции повторяются только после новой проверки прав. Для чата scope — доверенные account+agent+visitor/member+operation; conversation_id, текст message входят в SHA-256 значимого payload; серверные candidate ID и stream как способ доставки не меняют операцию. Тот же key/payload возвращает исходный operation ID, state и terminal result; другой payload — 409 idempotency_conflict. Незавершённая операция возвращает сохранённый state без повторной генерации; проектируемый HTTP для accepted/generating использует 202 ChatOperation и Retry-After. Для остальных операций scope — account+actor+operation+resource. Срок хранения replay и правила списания, резервирования и возврата обращений требуют BE-029/SRE-027. Auth исключён. Первичная выдача widget session исключена; token-response replay не выполняется.
     IfMatch:
       name: If-Match
       in: header

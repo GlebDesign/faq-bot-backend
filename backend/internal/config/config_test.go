@@ -88,3 +88,24 @@ func TestDatabaseConfig(t *testing.T) {
 		}
 	})
 }
+
+func TestAgentCursorKey(t *testing.T) {
+	t.Setenv("APP_ENV", "development")
+	t.Setenv("DATABASE_URL", "postgres://fixture.invalid/test")
+	t.Setenv("SUPABASE_URL", "https://fixture.invalid")
+	t.Setenv("SUPABASE_KEY", "synthetic-provider")
+	t.Setenv("AUTH_ORIGIN", "https://fixture.invalid")
+	for _, key := range []string{"", "secret-too-short", strings.Repeat("a", 31), strings.Repeat("я", 16), strings.Repeat("a", 32)} {
+		t.Setenv("AGENT_CURSOR_KEY", key)
+		c, err := Load()
+		if len(key) < 32 {
+			if err == nil || !strings.Contains(err.Error(), "AGENT_CURSOR_KEY") || strings.Contains(err.Error(), key) && key != "" {
+				t.Fatal("unsafe or missing cursor key validation")
+			}
+			continue
+		}
+		if err != nil || string(c.AgentCursorKey) != key {
+			t.Fatal("valid cursor key rejected")
+		}
+	}
+}

@@ -2468,5 +2468,119 @@
       "stream": false
     },
     "valid": false
+  },
+  {
+    "name": "createAgent.empty_text",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": "",
+      "description": ""
+    },
+    "valid": true
+  },
+  {
+    "name": "createAgent.null_website",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": null,
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.missing_website",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.null_description",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": null
+    },
+    "valid": false
+  },
+  {
+    "name": "deleteAgent.without_if_match",
+    "method": "DELETE",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createAgent.nul",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": "https://company.example.invalid",
+      "description": "\u0000"
+    },
+    "valid": false
   }
 ]
