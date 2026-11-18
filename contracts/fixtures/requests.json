@@ -1,0 +1,2586 @@
+[
+  {
+    "name": "getProduct.valid",
+    "method": "GET",
+    "path": "/api/v1/public/product",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createAgent.valid",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": true
+  },
+  {
+    "name": "createAgent.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "createAgent.forged_account",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listAgents.valid",
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listAgents.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/agents?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getAgent.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "updateAgent.valid",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": true
+  },
+  {
+    "name": "updateAgent.missing_idempotency",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.invalid_revision",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "1",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.forged_account",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "deleteAgent.valid",
+    "method": "DELETE",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "deleteAgent.missing_idempotency",
+    "method": "DELETE",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "publishAgent.valid",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/publish",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "knowledge_revision": 1,
+      "config_revision": 1,
+      "public_sources_enabled": false
+    },
+    "valid": true
+  },
+  {
+    "name": "publishAgent.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/publish",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "knowledge_revision": 1,
+      "config_revision": 1,
+      "public_sources_enabled": false
+    },
+    "valid": false
+  },
+  {
+    "name": "publishAgent.forged_account",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/publish",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "knowledge_revision": 1,
+      "config_revision": 1,
+      "public_sources_enabled": false,
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "getEmbedCode.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/embed-code",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "getWidgetSettings.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "updateWidgetSettings.valid",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": null,
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 16,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат"
+    },
+    "valid": true
+  },
+  {
+    "name": "updateWidgetSettings.missing_idempotency",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": null,
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 16,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateWidgetSettings.invalid_revision",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "1",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": null,
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 16,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateWidgetSettings.forged_account",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": null,
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 16,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "resetWidgetSettings.valid",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/widget-settings/reset",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "resetWidgetSettings.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/widget-settings/reset",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "resetWidgetSettings.invalid_revision",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/widget-settings/reset",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "1",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getJob.valid",
+    "method": "GET",
+    "path": "/api/v1/jobs/job_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createDocument.valid",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "FAQ",
+      "text": "Доставка занимает три дня."
+    },
+    "valid": true
+  },
+  {
+    "name": "createDocument.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "FAQ",
+      "text": "Доставка занимает три дня."
+    },
+    "valid": false
+  },
+  {
+    "name": "createDocument.forged_account",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "FAQ",
+      "text": "Доставка занимает три дня.",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listDocuments.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listDocuments.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/documents?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getDocument.valid",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "updateDocument.valid",
+    "method": "PATCH",
+    "path": "/api/v1/documents/doc_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "text": "Доставка занимает два дня."
+    },
+    "valid": true
+  },
+  {
+    "name": "updateDocument.missing_idempotency",
+    "method": "PATCH",
+    "path": "/api/v1/documents/doc_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "text": "Доставка занимает два дня."
+    },
+    "valid": false
+  },
+  {
+    "name": "updateDocument.invalid_revision",
+    "method": "PATCH",
+    "path": "/api/v1/documents/doc_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "1",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "text": "Доставка занимает два дня."
+    },
+    "valid": false
+  },
+  {
+    "name": "updateDocument.forged_account",
+    "method": "PATCH",
+    "path": "/api/v1/documents/doc_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "text": "Доставка занимает два дня.",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "deleteDocument.valid",
+    "method": "DELETE",
+    "path": "/api/v1/documents/doc_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "deleteDocument.missing_idempotency",
+    "method": "DELETE",
+    "path": "/api/v1/documents/doc_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "reindexDocument.valid",
+    "method": "POST",
+    "path": "/api/v1/documents/doc_a1/reindex",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "reindexDocument.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/documents/doc_a1/reindex",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "createCoverage.valid",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "knowledge_revision": 1,
+      "questions": [
+        "Какие сроки доставки?"
+      ]
+    },
+    "valid": true
+  },
+  {
+    "name": "createCoverage.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "knowledge_revision": 1,
+      "questions": [
+        "Какие сроки доставки?"
+      ]
+    },
+    "valid": false
+  },
+  {
+    "name": "createCoverage.forged_account",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "knowledge_revision": 1,
+      "questions": [
+        "Какие сроки доставки?"
+      ],
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listCoverage.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listCoverage.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/coverage-runs?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getCoverage.valid",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "sendTestChat.valid",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false
+    },
+    "valid": true
+  },
+  {
+    "name": "sendTestChat.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false
+    },
+    "valid": false
+  },
+  {
+    "name": "sendTestChat.forged_account",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false,
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "createTestConversation.valid",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createTestConversation.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "listConversations.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listConversations.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/conversations?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "listMessages.valid",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listMessages.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getCabinetSource.valid",
+    "method": "GET",
+    "path": "/api/v1/messages/msg_a1/sources/cite_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "getAnalytics.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/analytics",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listUnanswered.valid",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/unanswered",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listUnanswered.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/unanswered?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "createWidgetSession.valid",
+    "method": "POST",
+    "path": "/api/v1/widget/sessions",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "agent_public_id": "pub_a1"
+    },
+    "valid": true
+  },
+  {
+    "name": "createWidgetSession.forged_account",
+    "method": "POST",
+    "path": "/api/v1/widget/sessions",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "agent_public_id": "pub_a1",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "sendWidgetMessage.valid",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false
+    },
+    "valid": true
+  },
+  {
+    "name": "sendWidgetMessage.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false
+    },
+    "valid": false
+  },
+  {
+    "name": "sendWidgetMessage.forged_account",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false,
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "getPublicSource.valid",
+    "method": "GET",
+    "path": "/api/v1/widget/messages/msg_a1/sources/cite_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createFeedback.valid",
+    "method": "POST",
+    "path": "/api/v1/messages/msg_a1/feedback",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": {
+      "rating": "helpful"
+    },
+    "valid": true
+  },
+  {
+    "name": "createFeedback.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/messages/msg_a1/feedback",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": {
+      "rating": "helpful"
+    },
+    "valid": false
+  },
+  {
+    "name": "createFeedback.forged_account",
+    "method": "POST",
+    "path": "/api/v1/messages/msg_a1/feedback",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": {
+      "rating": "helpful",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listPackages.valid",
+    "method": "GET",
+    "path": "/api/v1/packages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listPackages.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/packages?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getBalance.valid",
+    "method": "GET",
+    "path": "/api/v1/packages/balance",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createPackageRequest.valid",
+    "method": "POST",
+    "path": "/api/v1/package-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "package_id": "package_demo"
+    },
+    "valid": true
+  },
+  {
+    "name": "createPackageRequest.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/package-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "package_id": "package_demo"
+    },
+    "valid": false
+  },
+  {
+    "name": "createPackageRequest.forged_account",
+    "method": "POST",
+    "path": "/api/v1/package-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "package_id": "package_demo",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listPackageRequests.valid",
+    "method": "GET",
+    "path": "/api/v1/package-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listPackageRequests.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/package-requests?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getPackageRequest.valid",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "decidePackageRequest.valid",
+    "method": "PATCH",
+    "path": "/api/v1/platform/package-requests/package_request_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "approved",
+      "reason": "Основание проверено оператором"
+    },
+    "valid": true
+  },
+  {
+    "name": "decidePackageRequest.missing_idempotency",
+    "method": "PATCH",
+    "path": "/api/v1/platform/package-requests/package_request_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "approved",
+      "reason": "Основание проверено оператором"
+    },
+    "valid": false
+  },
+  {
+    "name": "decidePackageRequest.forged_account",
+    "method": "PATCH",
+    "path": "/api/v1/platform/package-requests/package_request_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "approved",
+      "reason": "Основание проверено оператором",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "createSupportTicket.valid",
+    "method": "POST",
+    "path": "/api/v1/support/tickets",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ"
+    },
+    "valid": true
+  },
+  {
+    "name": "createSupportTicket.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/support/tickets",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ"
+    },
+    "valid": false
+  },
+  {
+    "name": "createSupportTicket.forged_account",
+    "method": "POST",
+    "path": "/api/v1/support/tickets",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listSupportTickets.valid",
+    "method": "GET",
+    "path": "/api/v1/support/tickets",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listSupportTickets.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/support/tickets?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getSupportTicket.valid",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "updateSupportTicket.valid",
+    "method": "PATCH",
+    "path": "/api/v1/platform/support/tickets/ticket_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "in_progress"
+    },
+    "valid": true
+  },
+  {
+    "name": "updateSupportTicket.missing_idempotency",
+    "method": "PATCH",
+    "path": "/api/v1/platform/support/tickets/ticket_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "in_progress"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateSupportTicket.forged_account",
+    "method": "PATCH",
+    "path": "/api/v1/platform/support/tickets/ticket_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "in_progress",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "createAttachmentIntent.valid",
+    "method": "POST",
+    "path": "/api/v1/support/tickets/ticket_a1/attachments",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "filename": "diagnostic.txt",
+      "content_type": "text/plain",
+      "size": 100
+    },
+    "valid": true
+  },
+  {
+    "name": "createAttachmentIntent.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/support/tickets/ticket_a1/attachments",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "filename": "diagnostic.txt",
+      "content_type": "text/plain",
+      "size": 100
+    },
+    "valid": false
+  },
+  {
+    "name": "createAttachmentIntent.forged_account",
+    "method": "POST",
+    "path": "/api/v1/support/tickets/ticket_a1/attachments",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "filename": "diagnostic.txt",
+      "content_type": "text/plain",
+      "size": 100,
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "commitAttachment.valid",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "commitAttachment.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "downloadAttachment.valid",
+    "method": "GET",
+    "path": "/api/v1/support/attachments/attachment_a1/download",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createContactRequest.valid",
+    "method": "POST",
+    "path": "/api/v1/widget/conversations/conv_a1/contact-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent": true,
+      "consent_version": "draft-v1"
+    },
+    "valid": true
+  },
+  {
+    "name": "createContactRequest.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/widget/conversations/conv_a1/contact-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent": true,
+      "consent_version": "draft-v1"
+    },
+    "valid": false
+  },
+  {
+    "name": "createContactRequest.forged_account",
+    "method": "POST",
+    "path": "/api/v1/widget/conversations/conv_a1/contact-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent": true,
+      "consent_version": "draft-v1",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listContactRequests.valid",
+    "method": "GET",
+    "path": "/api/v1/contact-requests",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listContactRequests.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/contact-requests?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getContactRequest.valid",
+    "method": "GET",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "updateContactRequest.valid",
+    "method": "PATCH",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "in_progress"
+    },
+    "valid": true
+  },
+  {
+    "name": "updateContactRequest.missing_idempotency",
+    "method": "PATCH",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "in_progress"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateContactRequest.forged_account",
+    "method": "PATCH",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "status": "in_progress",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listAuditEvents.valid",
+    "method": "GET",
+    "path": "/api/v1/audit-events",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listAuditEvents.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/audit-events?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "getAuditEvent.valid",
+    "method": "GET",
+    "path": "/api/v1/audit-events/audit_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createPartnerSession.valid",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "agent_public_id": "pub_a1",
+      "visitor_subject": "opaque-demo-subject"
+    },
+    "valid": true
+  },
+  {
+    "name": "createPartnerSession.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "agent_public_id": "pub_a1",
+      "visitor_subject": "opaque-demo-subject"
+    },
+    "valid": false
+  },
+  {
+    "name": "createPartnerSession.forged_account",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "agent_public_id": "pub_a1",
+      "visitor_subject": "opaque-demo-subject",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "issuePartnerCredential.valid",
+    "method": "POST",
+    "path": "/api/v1/partner-credentials",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "agent_ids": [
+        "agent_a1"
+      ],
+      "scopes": [
+        "widget.session.create"
+      ],
+      "expires_at": "2026-10-22T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "issuePartnerCredential.missing_idempotency",
+    "method": "POST",
+    "path": "/api/v1/partner-credentials",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "agent_ids": [
+        "agent_a1"
+      ],
+      "scopes": [
+        "widget.session.create"
+      ],
+      "expires_at": "2026-10-22T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "issuePartnerCredential.forged_account",
+    "method": "POST",
+    "path": "/api/v1/partner-credentials",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "agent_ids": [
+        "agent_a1"
+      ],
+      "scopes": [
+        "widget.session.create"
+      ],
+      "expires_at": "2026-10-22T12:00:00Z",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listPartnerCredentials.valid",
+    "method": "GET",
+    "path": "/api/v1/partner-credentials",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listPartnerCredentials.invalid_limit",
+    "method": "GET",
+    "path": "/api/v1/partner-credentials?limit=101",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "revokePartnerCredential.valid",
+    "method": "DELETE",
+    "path": "/api/v1/partner-credentials/key_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "revokePartnerCredential.missing_idempotency",
+    "method": "DELETE",
+    "path": "/api/v1/partner-credentials/key_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "previewAsset.valid",
+    "method": "GET",
+    "path": "/api/v1/assets/asset_a1/preview",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "getWidgetAsset.valid",
+    "method": "GET",
+    "path": "/api/v1/widget/assets/asset_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "authLogin.valid",
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://cabinet.example.invalid",
+      "X-CSRF-Token": "fixture-csrf-not-a-credential",
+      "Cookie": "faqbot_session=synthetic-preliminary-session"
+    },
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password"
+    },
+    "valid": true
+  },
+  {
+    "name": "authLogin.missing_csrf",
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://cabinet.example.invalid",
+      "Cookie": "faqbot_session=fixture-session-not-a-credential"
+    },
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password"
+    },
+    "valid": false
+  },
+  {
+    "name": "authLogin.forged_account",
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://cabinet.example.invalid",
+      "X-CSRF-Token": "fixture-csrf-not-a-credential",
+      "Cookie": "faqbot_session=fixture-session-not-a-credential"
+    },
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "authRegister.valid",
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://cabinet.example.invalid",
+      "X-CSRF-Token": "fixture-csrf-not-a-credential",
+      "Cookie": "faqbot_session=synthetic-preliminary-session"
+    },
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password"
+    },
+    "valid": true
+  },
+  {
+    "name": "authRegister.missing_csrf",
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://cabinet.example.invalid",
+      "Cookie": "faqbot_session=fixture-session-not-a-credential"
+    },
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password"
+    },
+    "valid": false
+  },
+  {
+    "name": "authRegister.forged_account",
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "headers": {
+      "Content-Type": "application/json",
+      "Origin": "https://cabinet.example.invalid",
+      "X-CSRF-Token": "fixture-csrf-not-a-credential",
+      "Cookie": "faqbot_session=fixture-session-not-a-credential"
+    },
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password",
+      "account_id": "account_b"
+    },
+    "valid": false
+  },
+  {
+    "name": "listWidgetMessages.success",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?limit=20",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listWidgetMessages.empty",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?limit=20",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listWidgetMessages.forbidden",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?limit=20",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listWidgetMessages.failure",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?limit=20",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "listWidgetMessages.foreign_account",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?account_id=account_b",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "listWidgetMessages.foreign_agent",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?agent_id=agent_a2",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "listWidgetMessages.foreign_conversation",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?conversation_id=conv_a2",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "listWidgetMessages.untrusted_history",
+    "method": "GET",
+    "path": "/api/v1/widget/messages?history=untrusted",
+    "headers": {
+      "Authorization": "Bearer fixture-widget"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "updateAgent.invalid_if_match_0",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "junk\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.invalid_if_match_1",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"junk",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.invalid_if_match_2",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "x\"1\"y",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.invalid_if_match_3",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"0\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.invalid_if_match_4",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "1",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.missing_Origin",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.missing_X-CSRF-Token",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "AgentCreate.blank.request.140",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": " ",
+      "website": "",
+      "description": ""
+    },
+    "valid": false
+  },
+  {
+    "name": "MessageCreate.blank.request.141",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": " ",
+      "stream": false
+    },
+    "valid": false
+  },
+  {
+    "name": "AgentCreate.blank.request.142",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "\t\r\n",
+      "website": "",
+      "description": ""
+    },
+    "valid": false
+  },
+  {
+    "name": "MessageCreate.blank.request.143",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "\t\r\n",
+      "stream": false
+    },
+    "valid": false
+  },
+  {
+    "name": "AgentCreate.blank.request.144",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "   ",
+      "website": "",
+      "description": ""
+    },
+    "valid": false
+  },
+  {
+    "name": "MessageCreate.blank.request.145",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "   ",
+      "stream": false
+    },
+    "valid": false
+  },
+  {
+    "name": "AgentCreate.blank.request.146",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "    　",
+      "website": "",
+      "description": ""
+    },
+    "valid": false
+  },
+  {
+    "name": "MessageCreate.blank.request.147",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "    　",
+      "stream": false
+    },
+    "valid": false
+  },
+  {
+    "name": "createAgent.empty_text",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": "",
+      "description": ""
+    },
+    "valid": true
+  },
+  {
+    "name": "createAgent.null_website",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": null,
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.missing_website",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "description": "Ответы на вопросы компании"
+    },
+    "valid": false
+  },
+  {
+    "name": "updateAgent.null_description",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": null
+    },
+    "valid": false
+  },
+  {
+    "name": "deleteAgent.without_if_match",
+    "method": "DELETE",
+    "path": "/api/v1/agents/agent_a1",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": null,
+    "valid": true
+  },
+  {
+    "name": "createAgent.nul",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "headers": {
+      "X-Request-ID": "req_demo",
+      "Idempotency-Key": "op_demo_1",
+      "If-Match": "\"1\"",
+      "Content-Type": "application/json",
+      "Cookie": "faqbot_session=fixture-cabinet",
+      "X-CSRF-Token": "fixture-csrf",
+      "Origin": "https://cabinet.example.invalid"
+    },
+    "body": {
+      "name": "Помощник",
+      "website": "https://company.example.invalid",
+      "description": "\u0000"
+    },
+    "valid": false
+  }
+]

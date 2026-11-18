@@ -14,9 +14,9 @@ Go-модуль находится в папке `backend`. У него две �
 | `internal/config` | Читает и проверяет переменные окружения |
 | `internal/handlers` | Принимает HTTP-запросы и формирует JSON-ответы |
 | `internal/handlers/dto` | Содержит структуры запросов и ответов |
-| `internal/service` | Выполняет регистрацию, вход, проверку сессий и валидацию событий аудита |
+| `internal/service` | Выполняет Auth, tenant/RBAC проверки, CRUD агентов и валидацию аудита |
 | `internal/repository` | Читает и записывает данные через SQL |
-| `internal/models` | Описывает пользователя с правами, сессию и внутренние события аудита |
+| `internal/models` | Описывает identity, сессию, агента, аудит и SQL replay |
 | `internal/authprovider` | Обращается к Supabase для проверки email и пароля |
 | `internal/db` | Настраивает соединения с БД и выполняет транзакции |
 | `internal/migration` | Применяет SQL-файлы и следит за версией схемы |
@@ -79,5 +79,41 @@ go build ./internal/messaging ./internal/jobs
 `repository.Audit` вставляет запись и сравнивает повтор по серверному ключу.
 Вызывающий бизнес-сервис передаёт свою `*sql.Tx` и возвращает ошибку аудита
 в `db.WithTx`: изменение и аудит подтверждаются или отменяются вместе.
-Связывание с бизнес-сервисами и авторизацией ещё не выполнено, HTTP API чтения нет.
+CRUD агентов вызывает аудит в общей бизнес-транзакции. Auth пока не записывает
+свои события; HTTP API чтения аудита нет.
 Полный внутренний контракт — в [AUDIT.md](AUDIT.md).
+
+## Контракт и основание чата
+
+[REST](../contracts/openapi.yaml) и [probes](../contracts/health.openapi.yaml)
+содержат схемы и fixtures; работающие операции явно отделены от проектируемых.
+DTO лежат в handlers/dto, SQL и driver errors — в repository. Новые миграции
+добавляют agents и scoped conversations/messages/message_sources/ai_requests.
+[DATABASE.md](DATABASE.md#агенты-и-диалоги) описывает FK и ограничения.
+
+`repository.AIRequests.CreateOrRead` — минимальный внутренний SQL-путь replay:
+короткая транзакция, INSERT ON CONFLICT, scoped SELECT, сравнение SHA-256,
+сохранённые ID/state/result. Он не вызывает AI, не проверяет права пользователя,
+не создаёт сообщение, не управляет переходами состояний и обращениями.
+Scope получает от будущего доверенного сервиса, а не из тела browser request.
+Этот путь пока не подключён к HTTP. Владение транзакцией создания сообщения,
+replay и будущей записи аудита необходимо определить при реализации ChatService;
+текущий helper завершает только свою транзакцию записи ai_request.
+AuditService и WriteInTx остаются отдельным существующим контрактом.
+
+## Изолированный CRUD агентов
+
+`handlers.AgentHandler` проверяет транспорт, JSON, Origin/CSRF и получает
+`service.Scope` через `Auth.Scope`. Поля scope закрыты; getters возвращают
+значения. Service повторяет RBAC owner/admin; repository всегда ограничивает
+объектный SQL парой account+UUID и фильтрует deleted_at. Запрос public_id не
+предоставляет кабинетные права. HMAC cursor включает account/resource/sort.
+
+`service.Agents` владеет `db.WithTx`: резервирование SQL replay, изменение,
+`AuditService.WriteInTx` и сохранение результата выполняются в одной транзакции.
+Повтор резервирования сериализуется уникальным scope ключом в READ COMMITTED.
+PATCH блокирует scoped строку, сравнивает revision и повышает её атомарно.
+DELETE пишет tombstone и вызывает потребительский `AgentCleanup.RequestInTx`.
+Production adapter `repository.Agents` сохраняет durable pending запрос в той же tx;
+это узкая таблица для агентов, без общего job framework и фоновых горутин.
+Worker очистки и внешние Storage/MQ/AI операции отсутствуют.

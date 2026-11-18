@@ -225,3 +225,12 @@ func TestAuditTransactionAndStoreError(t *testing.T) {
 		t.Fatal("store cause lost")
 	}
 }
+
+func TestAuditWebsiteFieldNameOnly(t *testing.T) {
+	if !validAuditMetadataField("field_names_changed", []string{"website"}) {
+		t.Fatal("website name rejected")
+	}
+	if validAuditMetadataField("website", "https://example.invalid") || validAuditMetadataField("field_names_changed", []string{"website_value"}) {
+		t.Fatal("website whitelist widened")
+	}
+}

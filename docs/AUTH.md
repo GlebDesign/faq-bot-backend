@@ -30,6 +30,7 @@ cd backend
 export APP_ENV=development
 export SUPABASE_URL='<SUPABASE_PROJECT_URL>'
 export AUTH_ORIGIN='http://localhost:8080'
+export AGENT_CURSOR_KEY='local-only-change-this-shared-key-32-bytes'
 export AUTH_ALLOW_INSECURE_HTTP=true
 go run ./cmd/api
 ```
@@ -216,3 +217,20 @@ Secure сохраняется и в development. При logout сервер вы
   для этого нужен тестовый облачный проект и браузерный клиент.
 
 Команды тестов описаны в [BACKEND.md](BACKEND.md), наблюдаемость — в [HTTP.md](HTTP.md).
+
+## Доступ к агентам
+
+`Auth.Scope` сначала вызывает обычную проверку сессии и актуального членства,
+затем создаёт Scope с закрытыми полями и getters. Identity копируется по значению;
+HTTP body/headers и bearer не могут менять account, actor или роль.
+Все CRUD вызовы `service.Agents` дополнительно проверяют owner/admin. `audit_read`
+не влияет на эти права. Внутренний `Scope.CanReadAudit` сохраняет отдельное правило:
+owner либо admin с audit_read; HTTP API чтения аудита пока нет. Owner не получает
+platform полномочий. Visitor/partner/platform роль без tenant membership не
+образует кабинетный scope.
+
+Новые маршруты используют ту же cookie, expiry/revocation и membership проверку.
+Mutation требует точный Origin и constant-time CSRF; GET запрещает чужой Origin
+и Sec-Fetch-Site=cross-site. Проверка выполняется до replay, поэтому удалённое
+членство или отозванная сессия не позволяют повторно получить результат операции.
+Подробности запросов — в [HTTP.md](HTTP.md#crud-агентов).

@@ -2,7 +2,8 @@
 
 Go API использует стандартный `net/http.ServeMux`. Точка входа —
 [cmd/api/main.go](../backend/cmd/api/main.go), маршруты —
-[router.go](../backend/internal/handlers/router.go) и [auth.go](../backend/internal/handlers/auth.go).
+[router.go](../backend/internal/handlers/router.go), [auth.go](../backend/internal/handlers/auth.go)
+и [agents.go](../backend/internal/handlers/agents.go).
 Запуск и переменные описаны в [BACKEND.md](BACKEND.md), установка стенда —
 в [плане релиза 0.0.1](upgrade_cluster/release_0.0.1.md).
 
@@ -18,13 +19,42 @@ Go API использует стандартный `net/http.ServeMux`. Точк
 | `POST /api/v1/auth/login` | Войти по email и паролю | То же |
 | `GET /api/v1/auth/session` | Получить локальную identity и параметры сессии | Только при включённом Auth; нужна сессия после входа |
 | `POST /api/v1/auth/logout` | Отозвать сессию | Только при включённом Auth; нужна действующая сессия |
+| `POST /api/v1/agents` | Создать агента | При включённом Auth; owner/admin текущей компании |
+| `GET /api/v1/agents` | Список агентов | То же |
+| `GET /api/v1/agents/{id}` | Получить агента и ETag | То же |
+| `PATCH /api/v1/agents/{id}` | Обновить полную тройку полей | То же; If-Match обязателен |
+| `DELETE /api/v1/agents/{id}` | Скрыть агента и принять заявку очистки | То же; If-Match не требуется |
 
 Полный набор настроек Auth описан в [BACKEND.md](BACKEND.md). В development без
 этих настроек Auth не подключается и возвращает 404. Неполная конфигурация
 останавливает запуск. В staging/production API без Auth не запускается.
-Других прикладных маршрутов сейчас нет: agents, chat, загрузка документов и
-восстановление пароля через Go API не реализованы. Форматы, коды, cookie,
+Chat, загрузка документов и восстановление пароля через Go API не реализованы. Форматы, коды, cookie,
 Origin/CSRF и примеры всех Auth-запросов — в [AUTH.md](AUTH.md).
+
+## REST-схемы
+
+[openapi.yaml](../contracts/openapi.yaml) `1.0.0-draft.4` содержит работающие Auth/CRUD агентов и
+проектируемые operations кабинета/виджета/партнёра. `x-implementation-status`
+отмечает доступность; добавление схемы не регистрирует маршрут.
+[health.openapi.yaml](../contracts/health.openapi.yaml) описывает probes.
+[Пояснения контракта](../contracts/README.md) фиксируют required/nullability,
+pagination, revisions, idempotency и открытые продуктовые решения.
+
+В Auth 405 содержит Allow; HEAD не поддерживается и получает 405 без тела по
+правилам net/http. Logout допускает предварительную сессию с её CSRF и Origin.
+Session/logout не имеют искусственных 400/429 ответов; session использует
+GET, logout — POST. Ошибки provider 502/503 относятся к login/register.
+Фактические ограничения credential/body измеряются в байтах UTF-8 через
+x-maxBytes/x-maxBodyBytes, а не maxLength; byte cases проверяются HTTP-тестом.
+NoopAuthentication в тестах fixtures валидирует формат, а не tenant RBAC.
+
+Кабинетные изменения требуют Origin и CSRF; feedback также допускает отдельную
+WidgetSession без кабинетных заголовков. Незавершённый чат описан ответом
+`202 ChatOperation`, конфликт payload — ответом 409. Первичная выдача visitor
+session исключена из replay ответов с bearer token. Проектируемый
+`GET /api/v1/widget/messages` читает историю собственного диалога из session с
+limit/cursor. Чувствительный JSON требует `Cache-Control: no-store`.
+Эти операции ещё не подключены к HTTP-серверу.
 
 ## Проверки состояния
 
@@ -69,7 +99,8 @@ JSON-ответы имеют `Content-Type: application/json`. Формат ош
 создаётся случайный. Это идентификатор запроса, не доказательство прав.
 Неизвестный путь возвращает 404 `not_found`. Неверный метод — 405
 `method_not_allowed` с `Allow: GET, HEAD` для health или единственным разрешённым
-методом Auth. В частности, Auth не поддерживает `HEAD` и `OPTIONS`.
+методом Auth. Для коллекции агентов Allow — `GET, POST`, для объекта —
+`GET, PATCH, DELETE`; HEAD/OPTIONS агентов также получают 405.
 Стандартный ServeMux может перенаправлять пути при нормализации URL;
 для вызовов следует использовать точные пути из таблицы.
 
@@ -122,3 +153,52 @@ go build -o /tmp/faq-api ./cmd/api
 собранному процессу, заменив `<PID>` его идентификатором. `go run` использует
 дополнительный процесс-обёртку. Автотест в `cmd/api/main_test.go` запускает
 отдельный процесс и проверяет остановку; ему нужно открытие локального TCP-порта.
+
+## CRUD агентов
+
+Scope содержит копию user/account/role/audit_read из проверенной Auth session.
+Предварительная, истёкшая, отозванная сессия и отсутствие членства дают 401;
+роль вне owner/admin — 403. GET запрещает чужой Origin и Sec-Fetch-Site=cross-site.
+POST/PATCH/DELETE требуют точный настроенный Origin и X-CSRF-Token текущей cookie.
+`audit_read` не даёт прав изменения и не ограничивает owner/admin CRUD.
+
+POST/PATCH принимают только JSON с тремя обязательными строками `name`, `website`,
+`description`. Missing/null, неизвестные и повторные поля, trailing JSON,
+невалидный UTF-8 и тело больше 1048576 байт дают 400 invalid_request. Имя содержит
+1..100 Unicode символов и хотя бы один символ вне White_Space; пробелы сохраняются.
+Website/description могут быть пустыми. Website не проверяется как URL и не загружается.
+DELETE принимает пустое тело. Scope нельзя задать через тело, query или headers.
+UUID чужой компании, public_id вместо UUID и tombstone дают 404.
+
+Список принимает только `limit` (1..100, default 20) и `cursor`, по одному значению.
+Сортировка — created_at DESC,id DESC; пустая страница содержит items=[] и
+next_cursor=null. HMAC cursor привязан к компании, ресурсу и сортировке. Чужой,
+изменённый, пустой и malformed cursor дают 400. Ключ подписи AGENT_CURSOR_KEY общий для реплик и перезапусков. После его ротации
+нужно начать список заново.
+
+GET/PATCH объекта возвращают quoted ETag revision. PATCH требует ровно quoted
+положительное int64 в If-Match без префиксов, списков или пробелов; missing/invalid —
+400, устаревшее значение — 412 revision_conflict. Изменение атомарно повышает
+revision на один; knowledge/config revisions этот CRUD не меняет.
+
+Все три mutations требуют Idempotency-Key `[A-Za-z0-9_-]{1,128}`. Scope ключа —
+account+actor+operation+resource; для создания resource пуст. SHA-256 включает
+точные значения трёх полей, у PATCH также If-Match revision. Серверный operation
+UUID не зависит от Request-ID. Конкурентные запросы с одним ключом сохраняют одно
+изменение и один audit; replay возвращает исходный JSON/ID и код ответа после
+новой проверки сессии/прав. Replay PATCH проверяется до stale revision. Другой
+payload с тем же ключом — 409 idempotency_conflict.
+
+DELETE не требует If-Match. Он в одной SQL-транзакции создаёт tombstone,
+agent.deleted audit и agent_cleanup_requests со статусом pending; 202 означает
+принятую заявку, а не завершение очистки. Ошибка cleanup adapter отменяет всё и
+возвращает 500; тот же ключ можно повторить после устранения ошибки. Тот же ключ
+успешного DELETE возвращает исходный Job; новый ключ для tombstone — 404.
+Обработчика очереди, физической очистки, widget/chat маршрутов пока нет.
+`GET /api/v1/jobs/{id}` также ещё не подключён; сохранённый Job остаётся pending.
+Retention replay и cleanup записей ещё не назначен. Отказы доступа не записываются
+этим CRUD в audit; успешные изменения и audit подтверждаются вместе.
+
+Строки агента с NUL и JSON с непарными UTF-16 surrogate escapes отклоняются
+с 400 до SQL. Корректные surrogate pairs, literal U+FFFD и исходный Unicode
+сохраняются без нормализации. DELETE проверяет фактическое пустое тело, включая chunked.
