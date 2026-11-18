@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	AgentCursorKey        []byte
 	AuthEnabled           bool
 	SupabaseURL           string
 	SupabaseKey           string
@@ -74,6 +75,7 @@ func Load() (Config, error) {
 	c.SupabaseURL = os.Getenv("SUPABASE_URL")
 	c.SupabaseKey = os.Getenv("SUPABASE_KEY")
 	c.AuthOrigin = os.Getenv("AUTH_ORIGIN")
+	c.AgentCursorKey = []byte(os.Getenv("AGENT_CURSOR_KEY"))
 	raw, insecureSet := os.LookupEnv("AUTH_ALLOW_INSECURE_HTTP")
 	if insecureSet {
 		c.AuthAllowInsecureHTTP, err = strconv.ParseBool(raw)
@@ -86,6 +88,9 @@ func Load() (Config, error) {
 	_, originSet := os.LookupEnv("AUTH_ORIGIN")
 	c.AuthEnabled = urlSet || keySet || originSet || insecureSet
 	if c.AuthEnabled {
+		if len(c.AgentCursorKey) < 32 {
+			return Config{}, errors.New("AGENT_CURSOR_KEY must contain at least 32 bytes when Auth is enabled")
+		}
 		if c.SupabaseURL == "" || strings.TrimSpace(c.SupabaseKey) == "" || c.AuthOrigin == "" || c.DatabaseURL == "" {
 			return Config{}, errors.New("SUPABASE_URL, SUPABASE_KEY, AUTH_ORIGIN and DATABASE_URL must be configured together")
 		}

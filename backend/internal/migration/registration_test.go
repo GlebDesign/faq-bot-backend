@@ -255,7 +255,7 @@ func TestTrialMigrationUpgradeNoBackfill(t *testing.T) {
 	}
 	var version int
 	var dirty, removed bool
-	if err := pool.QueryRowContext(ctx, "SELECT version,dirty FROM schema_migrations").Scan(&version, &dirty); err != nil || version != 2 || dirty {
+	if err := pool.QueryRowContext(ctx, "SELECT version,dirty FROM schema_migrations").Scan(&version, &dirty); err != nil || version != 5 || dirty {
 		t.Fatalf("down version=%d dirty=%v err=%v", version, dirty, err)
 	}
 	if err := pool.QueryRowContext(ctx, "SELECT to_regclass('trial_bootstrap_intents') IS NULL").Scan(&removed); err != nil || !removed {

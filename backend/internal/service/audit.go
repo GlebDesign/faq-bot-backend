@@ -183,7 +183,7 @@ func validAuditMetadataField(key string, value any) bool {
 			return false
 		}
 		for _, field := range fields {
-			if !oneOf(field, "name", "description", "status", "role", "audit_read", "settings", "widget_settings", "integration_enabled", "config", "visibility", "request_limit", "remaining_requests") {
+			if !oneOf(field, "name", "website", "description", "status", "role", "audit_read", "settings", "widget_settings", "integration_enabled", "config", "visibility", "request_limit", "remaining_requests") {
 				return false
 			}
 		}

@@ -1,0 +1,92 @@
+---
+openapi: 3.0.3
+info:
+  title: FAQ Go API operational probes
+  version: 1.0.0
+  description: Internal process probes; no account data or dependency credentials.
+paths:
+  "/health/live":
+    get:
+      operationId: liveness
+      responses:
+        '200':
+          "$ref": "#/components/responses/OK"
+        '405':
+          "$ref": "#/components/responses/Error"
+    head:
+      operationId: livenessHead
+      responses:
+        '200':
+          description: Same status as GET; no response body
+        '405':
+          description: Same status as GET; no response body
+  "/health/startup":
+    get:
+      operationId: startup
+      responses:
+        '200':
+          "$ref": "#/components/responses/OK"
+        '503':
+          "$ref": "#/components/responses/Error"
+        '405':
+          "$ref": "#/components/responses/Error"
+    head:
+      operationId: startupHead
+      responses:
+        '200':
+          description: Same status as GET; no response body
+        '503':
+          description: Same status as GET; no response body
+        '405':
+          description: Same status as GET; no response body
+  "/health/ready":
+    get:
+      operationId: readiness
+      responses:
+        '200':
+          "$ref": "#/components/responses/OK"
+        '503':
+          "$ref": "#/components/responses/Error"
+        '405':
+          "$ref": "#/components/responses/Error"
+    head:
+      operationId: readinessHead
+      responses:
+        '200':
+          description: Same status as GET; no response body
+        '503':
+          description: Same status as GET; no response body
+        '405':
+          description: Same status as GET; no response body
+components:
+  responses:
+    OK:
+      description: Probe passed
+      headers:
+        X-Request-ID:
+          schema:
+            type: string
+        Cache-Control:
+          schema:
+            type: string
+            enum:
+            - no-store
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+            - status
+            properties:
+              status:
+                type: string
+                enum:
+                - ok
+    Error:
+      description: Probe not ready or unsupported method; HEAD is also supported without
+        response body.
+      content:
+        application/json:
+          schema:
+            "$ref": "./openapi.yaml#/components/schemas/APIError"

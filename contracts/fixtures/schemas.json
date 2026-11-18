@@ -1,0 +1,1659 @@
+[
+  {
+    "name": "APIError.valid",
+    "schema": "APIError",
+    "valid": true,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    }
+  },
+  {
+    "name": "APIError.missing_required",
+    "schema": "APIError",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Product.valid",
+    "schema": "Product",
+    "valid": true,
+    "body": {
+      "name": "FAQ Bot",
+      "description": "Ответы на основе базы знаний компании",
+      "unit": "requests"
+    }
+  },
+  {
+    "name": "Product.missing_required",
+    "schema": "Product",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "AgentCreate.valid",
+    "schema": "AgentCreate",
+    "valid": true,
+    "body": {
+      "name": "Помощник",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    }
+  },
+  {
+    "name": "AgentCreate.missing_required",
+    "schema": "AgentCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "AgentUpdate.valid",
+    "schema": "AgentUpdate",
+    "valid": true,
+    "body": {
+      "name": "Помощник компании",
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    }
+  },
+  {
+    "name": "AgentUpdate.missing_required",
+    "schema": "AgentUpdate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Agent.valid",
+    "schema": "Agent",
+    "valid": true,
+    "body": {
+      "id": "agent_a1",
+      "account_id": "account_a",
+      "public_id": "pub_a1",
+      "name": "Помощник",
+      "status": "draft",
+      "revision": 1,
+      "knowledge_revision": 2,
+      "active_knowledge_revision": 1,
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "public_sources_enabled": false,
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    }
+  },
+  {
+    "name": "Agent.missing_required",
+    "schema": "Agent",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "AgentPage.valid",
+    "schema": "AgentPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "agent_a1",
+          "account_id": "account_a",
+          "public_id": "pub_a1",
+          "name": "Помощник",
+          "status": "draft",
+          "revision": 1,
+          "knowledge_revision": 2,
+          "active_knowledge_revision": 1,
+          "config_revision": 1,
+          "published_config_revision": 0,
+          "public_sources_enabled": false,
+          "website": "https://company.example.invalid",
+          "description": "Ответы на вопросы компании"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "AgentPage.missing_required",
+    "schema": "AgentPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PublishRequest.valid",
+    "schema": "PublishRequest",
+    "valid": true,
+    "body": {
+      "knowledge_revision": 1,
+      "config_revision": 1,
+      "public_sources_enabled": false
+    }
+  },
+  {
+    "name": "PublishRequest.missing_required",
+    "schema": "PublishRequest",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "EmbedCode.valid",
+    "schema": "EmbedCode",
+    "valid": true,
+    "body": {
+      "agent_public_id": "pub_a1",
+      "snippet": "<script src=\"https://widget.example.invalid/widget.js\" data-agent=\"pub_a1\" async></script>"
+    }
+  },
+  {
+    "name": "EmbedCode.missing_required",
+    "schema": "EmbedCode",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "WidgetConfig.valid",
+    "schema": "WidgetConfig",
+    "valid": true,
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": null,
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 16,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат"
+    }
+  },
+  {
+    "name": "WidgetConfig.missing_required",
+    "schema": "WidgetConfig",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "WidgetSettings.valid",
+    "schema": "WidgetSettings",
+    "valid": true,
+    "body": {
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "draft": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      }
+    }
+  },
+  {
+    "name": "WidgetSettings.missing_required",
+    "schema": "WidgetSettings",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Asset.valid",
+    "schema": "Asset",
+    "valid": true,
+    "body": {
+      "id": "asset_a1",
+      "status": "draft",
+      "detected_type": "image/png",
+      "size": 1024
+    }
+  },
+  {
+    "name": "Asset.missing_required",
+    "schema": "Asset",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "FileUpload.valid",
+    "schema": "FileUpload",
+    "valid": true,
+    "body": {
+      "file": "binary-upload"
+    }
+  },
+  {
+    "name": "FileUpload.missing_required",
+    "schema": "FileUpload",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "DocumentCreate.valid",
+    "schema": "DocumentCreate",
+    "valid": true,
+    "body": {
+      "name": "FAQ",
+      "text": "Доставка занимает три дня."
+    }
+  },
+  {
+    "name": "DocumentCreate.missing_required",
+    "schema": "DocumentCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "DocumentUpdate.valid",
+    "schema": "DocumentUpdate",
+    "valid": true,
+    "body": {
+      "text": "Доставка занимает два дня."
+    }
+  },
+  {
+    "name": "DocumentUpdate.missing_required",
+    "schema": "DocumentUpdate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Document.valid",
+    "schema": "Document",
+    "valid": true,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "ready",
+      "error_code": null
+    }
+  },
+  {
+    "name": "Document.missing_required",
+    "schema": "Document",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "DocumentPage.valid",
+    "schema": "DocumentPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "doc_a1",
+          "agent_id": "agent_a1",
+          "name": "FAQ",
+          "version": 1,
+          "knowledge_revision": 1,
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "DocumentPage.missing_required",
+    "schema": "DocumentPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Job.valid",
+    "schema": "Job",
+    "valid": true,
+    "body": {
+      "id": "job_a1",
+      "status": "pending",
+      "error_code": null
+    }
+  },
+  {
+    "name": "Job.missing_required",
+    "schema": "Job",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "CoverageCreate.valid",
+    "schema": "CoverageCreate",
+    "valid": true,
+    "body": {
+      "knowledge_revision": 1,
+      "questions": [
+        "Какие сроки доставки?"
+      ]
+    }
+  },
+  {
+    "name": "CoverageCreate.missing_required",
+    "schema": "CoverageCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "CoverageResult.valid",
+    "schema": "CoverageResult",
+    "valid": true,
+    "body": {
+      "question": "Какие сроки доставки?",
+      "has_answer": true,
+      "answer": "Три дня."
+    }
+  },
+  {
+    "name": "CoverageResult.missing_required",
+    "schema": "CoverageResult",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "CoverageRun.valid",
+    "schema": "CoverageRun",
+    "valid": true,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "completed",
+      "stale": false,
+      "results": [
+        {
+          "question": "Какие сроки доставки?",
+          "has_answer": true,
+          "answer": "Три дня."
+        }
+      ],
+      "error_code": null
+    }
+  },
+  {
+    "name": "CoverageRun.missing_required",
+    "schema": "CoverageRun",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "CoveragePage.valid",
+    "schema": "CoveragePage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "coverage_a1",
+          "agent_id": "agent_a1",
+          "knowledge_revision": 1,
+          "status": "completed",
+          "stale": false,
+          "results": [
+            {
+              "question": "Какие сроки доставки?",
+              "has_answer": true,
+              "answer": "Три дня."
+            }
+          ],
+          "error_code": null
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "CoveragePage.missing_required",
+    "schema": "CoveragePage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PublicSource.valid",
+    "schema": "PublicSource",
+    "valid": true,
+    "body": {
+      "citation_id": "cite_a1",
+      "display_name": "FAQ",
+      "locator": "Раздел «Доставка»",
+      "excerpt": "Доставка занимает три дня."
+    }
+  },
+  {
+    "name": "PublicSource.missing_required",
+    "schema": "PublicSource",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "CabinetSource.valid",
+    "schema": "CabinetSource",
+    "valid": true,
+    "body": {
+      "citation_id": "cite_a1",
+      "display_name": "FAQ",
+      "locator": "Раздел «Доставка»",
+      "excerpt": "Доставка занимает три дня.",
+      "document_id": "doc_a1",
+      "document_version": 1,
+      "knowledge_revision": 1
+    }
+  },
+  {
+    "name": "CabinetSource.missing_required",
+    "schema": "CabinetSource",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "WidgetSessionCreate.valid",
+    "schema": "WidgetSessionCreate",
+    "valid": true,
+    "body": {
+      "agent_public_id": "pub_a1"
+    }
+  },
+  {
+    "name": "WidgetSessionCreate.missing_required",
+    "schema": "WidgetSessionCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "WidgetSession.valid",
+    "schema": "WidgetSession",
+    "valid": true,
+    "body": {
+      "session_token": "fixture-placeholder-not-a-credential",
+      "expires_at": "2026-10-22T12:00:00Z",
+      "conversation_id": "conv_a1",
+      "config_revision": 1,
+      "widget_config": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      },
+      "consent_version": "draft-v1",
+      "consent_text": "Черновой текст: разрешаю передать контакт компании для ответа."
+    }
+  },
+  {
+    "name": "WidgetSession.missing_required",
+    "schema": "WidgetSession",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "MessageCreate.valid",
+    "schema": "MessageCreate",
+    "valid": true,
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false
+    }
+  },
+  {
+    "name": "MessageCreate.missing_required",
+    "schema": "MessageCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ChatAnswer.valid",
+    "schema": "ChatAnswer",
+    "valid": true,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "completed",
+      "answer": "Доставка занимает три дня.",
+      "has_answer": true,
+      "sources": [
+        {
+          "citation_id": "cite_a1",
+          "display_name": "FAQ",
+          "locator": "Раздел «Доставка»",
+          "excerpt": "Доставка занимает три дня."
+        }
+      ],
+      "remaining_requests": 99
+    }
+  },
+  {
+    "name": "ChatAnswer.missing_required",
+    "schema": "ChatAnswer",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "TestChatAnswer.valid",
+    "schema": "TestChatAnswer",
+    "valid": true,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "completed",
+      "answer": "Доставка занимает три дня.",
+      "has_answer": true,
+      "sources": [
+        {
+          "citation_id": "cite_a1",
+          "display_name": "FAQ",
+          "locator": "Раздел «Доставка»",
+          "excerpt": "Доставка занимает три дня.",
+          "document_id": "doc_a1",
+          "document_version": 1,
+          "knowledge_revision": 1
+        }
+      ],
+      "remaining_requests": 99,
+      "knowledge_revision": 1
+    }
+  },
+  {
+    "name": "TestChatAnswer.missing_required",
+    "schema": "TestChatAnswer",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Conversation.valid",
+    "schema": "Conversation",
+    "valid": true,
+    "body": {
+      "id": "conv_a1",
+      "agent_id": "agent_a1",
+      "created_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "Conversation.missing_required",
+    "schema": "Conversation",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ConversationPage.valid",
+    "schema": "ConversationPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "conv_a1",
+          "agent_id": "agent_a1",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "ConversationPage.missing_required",
+    "schema": "ConversationPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Message.valid",
+    "schema": "Message",
+    "valid": true,
+    "body": {
+      "id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "completed",
+      "question": "Какие сроки доставки?",
+      "answer": "Три дня.",
+      "created_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "Message.missing_required",
+    "schema": "Message",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "MessagePage.valid",
+    "schema": "MessagePage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "completed",
+          "question": "Какие сроки доставки?",
+          "answer": "Три дня.",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "MessagePage.missing_required",
+    "schema": "MessagePage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "FeedbackCreate.valid",
+    "schema": "FeedbackCreate",
+    "valid": true,
+    "body": {
+      "rating": "helpful"
+    }
+  },
+  {
+    "name": "FeedbackCreate.missing_required",
+    "schema": "FeedbackCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Feedback.valid",
+    "schema": "Feedback",
+    "valid": true,
+    "body": {
+      "message_id": "msg_a1",
+      "rating": "helpful"
+    }
+  },
+  {
+    "name": "Feedback.missing_required",
+    "schema": "Feedback",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Analytics.valid",
+    "schema": "Analytics",
+    "valid": true,
+    "body": {
+      "answered": 10,
+      "unanswered": 2,
+      "helpful": 4,
+      "unhelpful": 1
+    }
+  },
+  {
+    "name": "Analytics.missing_required",
+    "schema": "Analytics",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Unanswered.valid",
+    "schema": "Unanswered",
+    "valid": true,
+    "body": {
+      "message_id": "msg_a1",
+      "question": "Есть доставка на Луну?",
+      "created_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "Unanswered.missing_required",
+    "schema": "Unanswered",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "UnansweredPage.valid",
+    "schema": "UnansweredPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "message_id": "msg_a1",
+          "question": "Есть доставка на Луну?",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "UnansweredPage.missing_required",
+    "schema": "UnansweredPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Package.valid",
+    "schema": "Package",
+    "valid": true,
+    "body": {
+      "id": "package_demo",
+      "name": "Стартовый",
+      "requests": 1000
+    }
+  },
+  {
+    "name": "Package.missing_required",
+    "schema": "Package",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PackagePage.valid",
+    "schema": "PackagePage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "package_demo",
+          "name": "Стартовый",
+          "requests": 1000
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "PackagePage.missing_required",
+    "schema": "PackagePage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Balance.valid",
+    "schema": "Balance",
+    "valid": true,
+    "body": {
+      "account_id": "account_a",
+      "remaining_requests": 100,
+      "reserved_requests": 0,
+      "expires_at": null
+    }
+  },
+  {
+    "name": "Balance.missing_required",
+    "schema": "Balance",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PackageRequestCreate.valid",
+    "schema": "PackageRequestCreate",
+    "valid": true,
+    "body": {
+      "package_id": "package_demo"
+    }
+  },
+  {
+    "name": "PackageRequestCreate.missing_required",
+    "schema": "PackageRequestCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PackageRequest.valid",
+    "schema": "PackageRequest",
+    "valid": true,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "pending",
+      "created_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "PackageRequest.missing_required",
+    "schema": "PackageRequest",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PackageRequestPage.valid",
+    "schema": "PackageRequestPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "package_request_a1",
+          "package_id": "package_demo",
+          "status": "pending",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "PackageRequestPage.missing_required",
+    "schema": "PackageRequestPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PackageDecision.valid",
+    "schema": "PackageDecision",
+    "valid": true,
+    "body": {
+      "status": "approved",
+      "reason": "Основание проверено оператором"
+    }
+  },
+  {
+    "name": "PackageDecision.missing_required",
+    "schema": "PackageDecision",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "SupportTicketCreate.valid",
+    "schema": "SupportTicketCreate",
+    "valid": true,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ"
+    }
+  },
+  {
+    "name": "SupportTicketCreate.missing_required",
+    "schema": "SupportTicketCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "SupportStatusUpdate.valid",
+    "schema": "SupportStatusUpdate",
+    "valid": true,
+    "body": {
+      "status": "in_progress"
+    }
+  },
+  {
+    "name": "SupportStatusUpdate.missing_required",
+    "schema": "SupportStatusUpdate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "SupportStatusEvent.valid",
+    "schema": "SupportStatusEvent",
+    "valid": true,
+    "body": {
+      "status": "open",
+      "changed_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "SupportStatusEvent.missing_required",
+    "schema": "SupportStatusEvent",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "SupportTicket.valid",
+    "schema": "SupportTicket",
+    "valid": true,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "open",
+      "history": [
+        {
+          "status": "open",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "SupportTicket.missing_required",
+    "schema": "SupportTicket",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "SupportTicketPage.valid",
+    "schema": "SupportTicketPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "category": "technical",
+          "agent_id": null,
+          "description": "Не удаётся загрузить документ",
+          "id": "ticket_a1",
+          "status": "open",
+          "history": [
+            {
+              "status": "open",
+              "changed_at": "2026-10-22T12:00:00Z"
+            }
+          ],
+          "attachment_ids": [],
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "SupportTicketPage.missing_required",
+    "schema": "SupportTicketPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "AttachmentIntent.valid",
+    "schema": "AttachmentIntent",
+    "valid": true,
+    "body": {
+      "filename": "diagnostic.txt",
+      "content_type": "text/plain",
+      "size": 100
+    }
+  },
+  {
+    "name": "AttachmentIntent.missing_required",
+    "schema": "AttachmentIntent",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "Attachment.valid",
+    "schema": "Attachment",
+    "valid": true,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "pending"
+    }
+  },
+  {
+    "name": "Attachment.missing_required",
+    "schema": "Attachment",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ContactRequestCreate.valid",
+    "schema": "ContactRequestCreate",
+    "valid": true,
+    "body": {
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent": true,
+      "consent_version": "draft-v1"
+    }
+  },
+  {
+    "name": "ContactRequestCreate.missing_required",
+    "schema": "ContactRequestCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ContactReceipt.valid",
+    "schema": "ContactReceipt",
+    "valid": true,
+    "body": {
+      "request_id": "lead_a1",
+      "status": "received"
+    }
+  },
+  {
+    "name": "ContactReceipt.missing_required",
+    "schema": "ContactReceipt",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ContactRequest.valid",
+    "schema": "ContactRequest",
+    "valid": true,
+    "body": {
+      "id": "lead_a1",
+      "agent_id": "agent_a1",
+      "conversation_id": "conv_a1",
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent_version": "draft-v1",
+      "status": "new",
+      "created_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "ContactRequest.missing_required",
+    "schema": "ContactRequest",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ContactRequestPage.valid",
+    "schema": "ContactRequestPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "lead_a1",
+          "agent_id": "agent_a1",
+          "conversation_id": "conv_a1",
+          "message_id": "msg_a1",
+          "contact": "SYNTHETIC_CONTACT",
+          "consent_version": "draft-v1",
+          "status": "new",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "ContactRequestPage.missing_required",
+    "schema": "ContactRequestPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ContactStatusUpdate.valid",
+    "schema": "ContactStatusUpdate",
+    "valid": true,
+    "body": {
+      "status": "in_progress"
+    }
+  },
+  {
+    "name": "ContactStatusUpdate.missing_required",
+    "schema": "ContactStatusUpdate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "AuditEvent.valid",
+    "schema": "AuditEvent",
+    "valid": true,
+    "body": {
+      "id": "audit_a1",
+      "account_id": "account_a",
+      "actor_id": "user_a",
+      "action": "agent.created",
+      "resource_type": "agent",
+      "resource_id": "agent_a1",
+      "request_id": "req_demo",
+      "created_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "AuditEvent.missing_required",
+    "schema": "AuditEvent",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "AuditPage.valid",
+    "schema": "AuditPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "id": "audit_a1",
+          "account_id": "account_a",
+          "actor_id": "user_a",
+          "action": "agent.created",
+          "resource_type": "agent",
+          "resource_id": "agent_a1",
+          "request_id": "req_demo",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "AuditPage.missing_required",
+    "schema": "AuditPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PartnerSessionCreate.valid",
+    "schema": "PartnerSessionCreate",
+    "valid": true,
+    "body": {
+      "agent_public_id": "pub_a1",
+      "visitor_subject": "opaque-demo-subject"
+    }
+  },
+  {
+    "name": "PartnerSessionCreate.missing_required",
+    "schema": "PartnerSessionCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PartnerCredentialCreate.valid",
+    "schema": "PartnerCredentialCreate",
+    "valid": true,
+    "body": {
+      "agent_ids": [
+        "agent_a1"
+      ],
+      "scopes": [
+        "widget.session.create"
+      ],
+      "expires_at": "2026-10-22T12:00:00Z"
+    }
+  },
+  {
+    "name": "PartnerCredentialCreate.missing_required",
+    "schema": "PartnerCredentialCreate",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PartnerCredential.valid",
+    "schema": "PartnerCredential",
+    "valid": true,
+    "body": {
+      "key_id": "key_a1",
+      "partner_id": "partner_a1",
+      "agent_ids": [
+        "agent_a1"
+      ],
+      "scopes": [
+        "widget.session.create"
+      ],
+      "expires_at": "2026-10-22T12:00:00Z",
+      "status": "active"
+    }
+  },
+  {
+    "name": "PartnerCredential.missing_required",
+    "schema": "PartnerCredential",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PartnerCredentialPage.valid",
+    "schema": "PartnerCredentialPage",
+    "valid": true,
+    "body": {
+      "items": [
+        {
+          "key_id": "key_a1",
+          "partner_id": "partner_a1",
+          "agent_ids": [
+            "agent_a1"
+          ],
+          "scopes": [
+            "widget.session.create"
+          ],
+          "expires_at": "2026-10-22T12:00:00Z",
+          "status": "active"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "PartnerCredentialPage.missing_required",
+    "schema": "PartnerCredentialPage",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "PartnerCredentialIssued.valid",
+    "schema": "PartnerCredentialIssued",
+    "valid": true,
+    "body": {
+      "credential": {
+        "key_id": "key_a1",
+        "partner_id": "partner_a1",
+        "agent_ids": [
+          "agent_a1"
+        ],
+        "scopes": [
+          "widget.session.create"
+        ],
+        "expires_at": "2026-10-22T12:00:00Z",
+        "status": "active"
+      },
+      "secret": "fixture-placeholder-not-a-credential"
+    }
+  },
+  {
+    "name": "PartnerCredentialIssued.missing_required",
+    "schema": "PartnerCredentialIssued",
+    "valid": false,
+    "body": {}
+  },
+  {
+    "name": "ChatAnswer.invalid.126",
+    "schema": "ChatAnswer",
+    "valid": false,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "completed",
+      "answer": "Доставка занимает три дня.",
+      "has_answer": false,
+      "sources": [
+        {
+          "citation_id": "cite_a1",
+          "display_name": "FAQ",
+          "locator": "Раздел «Доставка»",
+          "excerpt": "Доставка занимает три дня."
+        }
+      ],
+      "remaining_requests": 99
+    }
+  },
+  {
+    "name": "ChatAnswer.invalid.127",
+    "schema": "ChatAnswer",
+    "valid": false,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "no_answer",
+      "answer": "Доставка занимает три дня.",
+      "has_answer": false,
+      "sources": [
+        {
+          "citation_id": "cite_a1",
+          "display_name": "FAQ",
+          "locator": "Раздел «Доставка»",
+          "excerpt": "Доставка занимает три дня."
+        }
+      ],
+      "remaining_requests": 99
+    }
+  },
+  {
+    "name": "MessageCreate.invalid.128",
+    "schema": "MessageCreate",
+    "valid": false,
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Какие сроки доставки?",
+      "stream": false,
+      "account_id": "account_b"
+    }
+  },
+  {
+    "name": "WidgetConfig.invalid.129",
+    "schema": "WidgetConfig",
+    "valid": false,
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": null,
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 25,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат"
+    }
+  },
+  {
+    "name": "WidgetConfig.invalid.130",
+    "schema": "WidgetConfig",
+    "valid": false,
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": null,
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 16,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат",
+      "css": "body{}"
+    }
+  },
+  {
+    "name": "WidgetConfig.invalid.131",
+    "schema": "WidgetConfig",
+    "valid": false,
+    "body": {
+      "schema_version": 1,
+      "name": "Помощник",
+      "avatar_asset_id": "https://evil.invalid/avatar.svg",
+      "greeting": "Чем помочь?",
+      "primary_color": "#2563EB",
+      "background_color": "#FFFFFF",
+      "message_color": "#EFF6FF",
+      "text_color": "#111827",
+      "font_family": "system",
+      "font_size": 16,
+      "radius": 16,
+      "button_shape": "circle",
+      "position": "bottom_right",
+      "offset_x": 24,
+      "offset_y": 24,
+      "icon_id": "chat",
+      "placeholder": "Введите вопрос",
+      "button_label": "Открыть чат"
+    }
+  },
+  {
+    "name": "PublicSource.invalid.132",
+    "schema": "PublicSource",
+    "valid": false,
+    "body": {
+      "citation_id": "cite_a1",
+      "display_name": "FAQ",
+      "locator": "Раздел «Доставка»",
+      "excerpt": "Доставка занимает три дня.",
+      "storage_key": "private/original"
+    }
+  },
+  {
+    "name": "PublicSource.invalid.133",
+    "schema": "PublicSource",
+    "valid": false,
+    "body": {
+      "citation_id": "cite_a1",
+      "display_name": "FAQ",
+      "locator": "Раздел «Доставка»",
+      "excerpt": "Доставка занимает три дня.",
+      "document_id": "doc_private"
+    }
+  },
+  {
+    "name": "ContactRequestCreate.invalid.134",
+    "schema": "ContactRequestCreate",
+    "valid": false,
+    "body": {
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent": false,
+      "consent_version": "draft-v1"
+    }
+  },
+  {
+    "name": "PartnerSessionCreate.invalid.135",
+    "schema": "PartnerSessionCreate",
+    "valid": false,
+    "body": {
+      "agent_public_id": "pub_a1",
+      "visitor_subject": "opaque-demo-subject",
+      "account_id": "account_b"
+    }
+  },
+  {
+    "name": "AuthCredentials.valid",
+    "schema": "AuthCredentials",
+    "valid": true,
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password"
+    }
+  },
+  {
+    "name": "AuthCredentials.forged_field",
+    "schema": "AuthCredentials",
+    "valid": false,
+    "body": {
+      "email": "fixture@example.invalid",
+      "password": "fixture-password",
+      "account_id": "forged"
+    }
+  },
+  {
+    "name": "AuthCSRF.valid",
+    "schema": "AuthCSRF",
+    "valid": true,
+    "body": {
+      "csrf_token": "fixture-csrf-not-a-credential"
+    }
+  },
+  {
+    "name": "AuthCSRF.forged_field",
+    "schema": "AuthCSRF",
+    "valid": false,
+    "body": {
+      "csrf_token": "fixture-csrf-not-a-credential",
+      "account_id": "forged"
+    }
+  },
+  {
+    "name": "AuthIdentity.valid",
+    "schema": "AuthIdentity",
+    "valid": true,
+    "body": {
+      "user_id": "user_a",
+      "account_id": "account_a",
+      "role": "owner",
+      "audit_read": false
+    }
+  },
+  {
+    "name": "AuthIdentity.forged_field",
+    "schema": "AuthIdentity",
+    "valid": false,
+    "body": {
+      "user_id": "user_a",
+      "account_id": "account_a",
+      "role": "owner",
+      "audit_read": false,
+      "platform_admin": true
+    }
+  },
+  {
+    "name": "AuthSession.valid",
+    "schema": "AuthSession",
+    "valid": true,
+    "body": {
+      "identity": {
+        "user_id": "user_a",
+        "account_id": "account_a",
+        "role": "owner",
+        "audit_read": false
+      },
+      "expires_at": "2026-11-03T20:00:00Z",
+      "csrf_token": "fixture-csrf-not-a-credential"
+    }
+  },
+  {
+    "name": "AuthSession.forged_field",
+    "schema": "AuthSession",
+    "valid": false,
+    "body": {
+      "identity": {
+        "user_id": "user_a",
+        "account_id": "account_a",
+        "role": "owner",
+        "audit_read": false
+      },
+      "expires_at": "2026-11-03T20:00:00Z",
+      "csrf_token": "fixture-csrf-not-a-credential",
+      "account_id": "forged"
+    }
+  },
+  {
+    "name": "agent.website-description.required",
+    "schema": "AgentCreate",
+    "valid": false,
+    "body": {
+      "name": "Помощник"
+    }
+  },
+  {
+    "name": "agent.empty-optional-text",
+    "schema": "AgentCreate",
+    "valid": true,
+    "body": {
+      "name": "Помощник",
+      "website": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "public-source.rejects-storage-key",
+    "schema": "PublicSource",
+    "valid": false,
+    "body": {
+      "citation_id": "cite_demo",
+      "display_name": "Документ",
+      "locator": "раздел 1",
+      "excerpt": "Фрагмент",
+      "storage_key": "not-public"
+    }
+  },
+  {
+    "name": "chat.rejects-untrusted-history",
+    "schema": "MessageCreate",
+    "valid": false,
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "Вопрос",
+      "stream": false,
+      "history": [
+        {
+          "role": "assistant",
+          "content": "untrusted"
+        }
+      ]
+    }
+  },
+  {
+    "name": "AgentCreate.blank.148",
+    "schema": "AgentCreate",
+    "valid": false,
+    "body": {
+      "name": " ",
+      "website": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "MessageCreate.blank.149",
+    "schema": "MessageCreate",
+    "valid": false,
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": " ",
+      "stream": false
+    }
+  },
+  {
+    "name": "AgentCreate.blank.150",
+    "schema": "AgentCreate",
+    "valid": false,
+    "body": {
+      "name": "\t\r\n",
+      "website": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "MessageCreate.blank.151",
+    "schema": "MessageCreate",
+    "valid": false,
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "\t\r\n",
+      "stream": false
+    }
+  },
+  {
+    "name": "AgentCreate.blank.152",
+    "schema": "AgentCreate",
+    "valid": false,
+    "body": {
+      "name": "   ",
+      "website": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "MessageCreate.blank.153",
+    "schema": "MessageCreate",
+    "valid": false,
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "   ",
+      "stream": false
+    }
+  },
+  {
+    "name": "AgentCreate.blank.154",
+    "schema": "AgentCreate",
+    "valid": false,
+    "body": {
+      "name": "    　",
+      "website": "",
+      "description": ""
+    }
+  },
+  {
+    "name": "MessageCreate.blank.155",
+    "schema": "MessageCreate",
+    "valid": false,
+    "body": {
+      "conversation_id": "conv_a1",
+      "message": "    　",
+      "stream": false
+    }
+  }
+]

@@ -1,0 +1,3299 @@
+[
+  {
+    "name": "getProduct.success",
+    "method": "GET",
+    "path": "/api/v1/public/product",
+    "status": 200,
+    "body": {
+      "name": "FAQ Bot",
+      "description": "Ответы на основе базы знаний компании",
+      "unit": "requests"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getProduct.failure",
+    "method": "GET",
+    "path": "/api/v1/public/product",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createAgent.success",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "status": 201,
+    "body": {
+      "id": "agent_a1",
+      "account_id": "account_a",
+      "public_id": "pub_a1",
+      "name": "Помощник",
+      "status": "draft",
+      "revision": 1,
+      "knowledge_revision": 0,
+      "active_knowledge_revision": 0,
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "public_sources_enabled": false,
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createAgent.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createAgent.failure",
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAgents.success",
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "agent_a1",
+          "account_id": "account_a",
+          "public_id": "pub_a1",
+          "name": "Помощник",
+          "status": "draft",
+          "revision": 1,
+          "knowledge_revision": 2,
+          "active_knowledge_revision": 1,
+          "config_revision": 1,
+          "published_config_revision": 0,
+          "public_sources_enabled": false,
+          "website": "https://company.example.invalid",
+          "description": "Ответы на вопросы компании"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAgents.empty",
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAgents.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAgents.failure",
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAgent.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 200,
+    "body": {
+      "id": "agent_a1",
+      "account_id": "account_a",
+      "public_id": "pub_a1",
+      "name": "Помощник",
+      "status": "draft",
+      "revision": 1,
+      "knowledge_revision": 2,
+      "active_knowledge_revision": 1,
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "public_sources_enabled": false,
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAgent.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAgent.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateAgent.success",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 200,
+    "body": {
+      "id": "agent_a1",
+      "account_id": "account_a",
+      "public_id": "pub_a1",
+      "name": "Помощник",
+      "status": "draft",
+      "revision": 1,
+      "knowledge_revision": 2,
+      "active_knowledge_revision": 1,
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "public_sources_enabled": false,
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateAgent.forbidden",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateAgent.failure",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "deleteAgent.success",
+    "method": "DELETE",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 202,
+    "body": {
+      "id": "job_a1",
+      "status": "pending",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "deleteAgent.forbidden",
+    "method": "DELETE",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "deleteAgent.failure",
+    "method": "DELETE",
+    "path": "/api/v1/agents/agent_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "publishAgent.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/publish",
+    "status": 200,
+    "body": {
+      "id": "agent_a1",
+      "account_id": "account_a",
+      "public_id": "pub_a1",
+      "name": "Помощник",
+      "status": "published",
+      "revision": 2,
+      "knowledge_revision": 1,
+      "active_knowledge_revision": 1,
+      "config_revision": 1,
+      "published_config_revision": 1,
+      "public_sources_enabled": false,
+      "website": "https://company.example.invalid",
+      "description": "Ответы на вопросы компании"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "publishAgent.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/publish",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "publishAgent.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/publish",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getEmbedCode.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/embed-code",
+    "status": 200,
+    "body": {
+      "agent_public_id": "pub_a1",
+      "snippet": "<script src=\"https://widget.example.invalid/widget.js\" data-agent=\"pub_a1\" async></script>"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getEmbedCode.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/embed-code",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getEmbedCode.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/embed-code",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getWidgetSettings.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "status": 200,
+    "body": {
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "draft": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      }
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getWidgetSettings.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getWidgetSettings.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateWidgetSettings.success",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "status": 200,
+    "body": {
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "draft": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      }
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateWidgetSettings.forbidden",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateWidgetSettings.failure",
+    "method": "PATCH",
+    "path": "/api/v1/agents/agent_a1/widget-settings",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "resetWidgetSettings.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/widget-settings/reset",
+    "status": 200,
+    "body": {
+      "config_revision": 1,
+      "published_config_revision": 0,
+      "draft": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      }
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "resetWidgetSettings.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/widget-settings/reset",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "resetWidgetSettings.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/widget-settings/reset",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadAsset.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/assets",
+    "status": 201,
+    "body": {
+      "id": "asset_a1",
+      "status": "draft",
+      "detected_type": "image/png",
+      "size": 1024
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadAsset.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/assets",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadAsset.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/assets",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getJob.success",
+    "method": "GET",
+    "path": "/api/v1/jobs/job_a1",
+    "status": 200,
+    "body": {
+      "id": "job_a1",
+      "status": "pending",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getJob.forbidden",
+    "method": "GET",
+    "path": "/api/v1/jobs/job_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getJob.failure",
+    "method": "GET",
+    "path": "/api/v1/jobs/job_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createDocument.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "status": 202,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "ready",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createDocument.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createDocument.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadDocument.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents/upload",
+    "status": 202,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "ready",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadDocument.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents/upload",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadDocument.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/documents/upload",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listDocuments.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "doc_a1",
+          "agent_id": "agent_a1",
+          "name": "FAQ",
+          "version": 1,
+          "knowledge_revision": 1,
+          "status": "ready",
+          "error_code": null
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listDocuments.empty",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listDocuments.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listDocuments.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/documents",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getDocument.success",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 200,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "ready",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getDocument.forbidden",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getDocument.failure",
+    "method": "GET",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateDocument.success",
+    "method": "PATCH",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 202,
+    "body": {
+      "id": "doc_a1",
+      "agent_id": "agent_a1",
+      "name": "FAQ",
+      "version": 1,
+      "knowledge_revision": 1,
+      "status": "ready",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateDocument.forbidden",
+    "method": "PATCH",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateDocument.failure",
+    "method": "PATCH",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "deleteDocument.success",
+    "method": "DELETE",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 202,
+    "body": {
+      "id": "job_a1",
+      "status": "pending",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "deleteDocument.forbidden",
+    "method": "DELETE",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "deleteDocument.failure",
+    "method": "DELETE",
+    "path": "/api/v1/documents/doc_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "reindexDocument.success",
+    "method": "POST",
+    "path": "/api/v1/documents/doc_a1/reindex",
+    "status": 202,
+    "body": {
+      "id": "job_a1",
+      "status": "pending",
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "reindexDocument.forbidden",
+    "method": "POST",
+    "path": "/api/v1/documents/doc_a1/reindex",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "reindexDocument.failure",
+    "method": "POST",
+    "path": "/api/v1/documents/doc_a1/reindex",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createCoverage.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "status": 202,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "completed",
+      "stale": false,
+      "results": [
+        {
+          "question": "Какие сроки доставки?",
+          "has_answer": true,
+          "answer": "Три дня."
+        }
+      ],
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createCoverage.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createCoverage.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listCoverage.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "coverage_a1",
+          "agent_id": "agent_a1",
+          "knowledge_revision": 1,
+          "status": "completed",
+          "stale": false,
+          "results": [
+            {
+              "question": "Какие сроки доставки?",
+              "has_answer": true,
+              "answer": "Три дня."
+            }
+          ],
+          "error_code": null
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listCoverage.empty",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listCoverage.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listCoverage.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/coverage-runs",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getCoverage.success",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 200,
+    "body": {
+      "id": "coverage_a1",
+      "agent_id": "agent_a1",
+      "knowledge_revision": 1,
+      "status": "completed",
+      "stale": false,
+      "results": [
+        {
+          "question": "Какие сроки доставки?",
+          "has_answer": true,
+          "answer": "Три дня."
+        }
+      ],
+      "error_code": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getCoverage.forbidden",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getCoverage.failure",
+    "method": "GET",
+    "path": "/api/v1/coverage-runs/coverage_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "sendTestChat.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "status": 200,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "completed",
+      "answer": "Доставка занимает три дня.",
+      "has_answer": true,
+      "sources": [
+        {
+          "citation_id": "cite_a1",
+          "display_name": "FAQ",
+          "locator": "Раздел «Доставка»",
+          "excerpt": "Доставка занимает три дня.",
+          "document_id": "doc_a1",
+          "document_version": 1,
+          "knowledge_revision": 1
+        }
+      ],
+      "remaining_requests": 99,
+      "knowledge_revision": 1
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "sendTestChat.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "sendTestChat.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createTestConversation.success",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "status": 201,
+    "body": {
+      "id": "conv_a1",
+      "agent_id": "agent_a1",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createTestConversation.forbidden",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createTestConversation.failure",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listConversations.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "conv_a1",
+          "agent_id": "agent_a1",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listConversations.empty",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listConversations.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listConversations.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/conversations",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listMessages.success",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "completed",
+          "question": "Какие сроки доставки?",
+          "answer": "Три дня.",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listMessages.empty",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listMessages.forbidden",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listMessages.failure",
+    "method": "GET",
+    "path": "/api/v1/conversations/conv_a1/messages",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getCabinetSource.success",
+    "method": "GET",
+    "path": "/api/v1/messages/msg_a1/sources/cite_a1",
+    "status": 200,
+    "body": {
+      "citation_id": "cite_a1",
+      "display_name": "FAQ",
+      "locator": "Раздел «Доставка»",
+      "excerpt": "Доставка занимает три дня.",
+      "document_id": "doc_a1",
+      "document_version": 1,
+      "knowledge_revision": 1
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getCabinetSource.forbidden",
+    "method": "GET",
+    "path": "/api/v1/messages/msg_a1/sources/cite_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getCabinetSource.failure",
+    "method": "GET",
+    "path": "/api/v1/messages/msg_a1/sources/cite_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAnalytics.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/analytics",
+    "status": 200,
+    "body": {
+      "answered": 10,
+      "unanswered": 2,
+      "helpful": 4,
+      "unhelpful": 1
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAnalytics.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/analytics",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAnalytics.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/analytics",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listUnanswered.success",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/unanswered",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "message_id": "msg_a1",
+          "question": "Есть доставка на Луну?",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listUnanswered.empty",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/unanswered",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listUnanswered.forbidden",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/unanswered",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listUnanswered.failure",
+    "method": "GET",
+    "path": "/api/v1/agents/agent_a1/unanswered",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createWidgetSession.success",
+    "method": "POST",
+    "path": "/api/v1/widget/sessions",
+    "status": 201,
+    "body": {
+      "session_token": "fixture-placeholder-not-a-credential",
+      "expires_at": "2026-10-22T12:00:00Z",
+      "conversation_id": "conv_a1",
+      "config_revision": 1,
+      "widget_config": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      },
+      "consent_version": "draft-v1",
+      "consent_text": "Черновой текст: разрешаю передать контакт компании для ответа."
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createWidgetSession.failure",
+    "method": "POST",
+    "path": "/api/v1/widget/sessions",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "sendWidgetMessage.success",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 200,
+    "body": {
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "completed",
+      "answer": "Доставка занимает три дня.",
+      "has_answer": true,
+      "sources": [
+        {
+          "citation_id": "cite_a1",
+          "display_name": "FAQ",
+          "locator": "Раздел «Доставка»",
+          "excerpt": "Доставка занимает три дня."
+        }
+      ],
+      "remaining_requests": 99
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "sendWidgetMessage.forbidden",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "sendWidgetMessage.failure",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getPublicSource.success",
+    "method": "GET",
+    "path": "/api/v1/widget/messages/msg_a1/sources/cite_a1",
+    "status": 200,
+    "body": {
+      "citation_id": "cite_a1",
+      "display_name": "FAQ",
+      "locator": "Раздел «Доставка»",
+      "excerpt": "Доставка занимает три дня."
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getPublicSource.forbidden",
+    "method": "GET",
+    "path": "/api/v1/widget/messages/msg_a1/sources/cite_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getPublicSource.failure",
+    "method": "GET",
+    "path": "/api/v1/widget/messages/msg_a1/sources/cite_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createFeedback.success",
+    "method": "POST",
+    "path": "/api/v1/messages/msg_a1/feedback",
+    "status": 200,
+    "body": {
+      "message_id": "msg_a1",
+      "rating": "helpful"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createFeedback.forbidden",
+    "method": "POST",
+    "path": "/api/v1/messages/msg_a1/feedback",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createFeedback.failure",
+    "method": "POST",
+    "path": "/api/v1/messages/msg_a1/feedback",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackages.success",
+    "method": "GET",
+    "path": "/api/v1/packages",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "package_demo",
+          "name": "Стартовый",
+          "requests": 1000
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackages.empty",
+    "method": "GET",
+    "path": "/api/v1/packages",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackages.forbidden",
+    "method": "GET",
+    "path": "/api/v1/packages",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackages.failure",
+    "method": "GET",
+    "path": "/api/v1/packages",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getBalance.success",
+    "method": "GET",
+    "path": "/api/v1/packages/balance",
+    "status": 200,
+    "body": {
+      "account_id": "account_a",
+      "remaining_requests": 100,
+      "reserved_requests": 0,
+      "expires_at": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getBalance.forbidden",
+    "method": "GET",
+    "path": "/api/v1/packages/balance",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getBalance.failure",
+    "method": "GET",
+    "path": "/api/v1/packages/balance",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createPackageRequest.success",
+    "method": "POST",
+    "path": "/api/v1/package-requests",
+    "status": 201,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "pending",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createPackageRequest.forbidden",
+    "method": "POST",
+    "path": "/api/v1/package-requests",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createPackageRequest.failure",
+    "method": "POST",
+    "path": "/api/v1/package-requests",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackageRequests.success",
+    "method": "GET",
+    "path": "/api/v1/package-requests",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "package_request_a1",
+          "package_id": "package_demo",
+          "status": "pending",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackageRequests.empty",
+    "method": "GET",
+    "path": "/api/v1/package-requests",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackageRequests.forbidden",
+    "method": "GET",
+    "path": "/api/v1/package-requests",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPackageRequests.failure",
+    "method": "GET",
+    "path": "/api/v1/package-requests",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getPackageRequest.success",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "status": 200,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "pending",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getPackageRequest.forbidden",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getPackageRequest.failure",
+    "method": "GET",
+    "path": "/api/v1/package-requests/package_request_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "decidePackageRequest.success",
+    "method": "PATCH",
+    "path": "/api/v1/platform/package-requests/package_request_a1",
+    "status": 200,
+    "body": {
+      "id": "package_request_a1",
+      "package_id": "package_demo",
+      "status": "approved",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "decidePackageRequest.forbidden",
+    "method": "PATCH",
+    "path": "/api/v1/platform/package-requests/package_request_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "decidePackageRequest.failure",
+    "method": "PATCH",
+    "path": "/api/v1/platform/package-requests/package_request_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createSupportTicket.success",
+    "method": "POST",
+    "path": "/api/v1/support/tickets",
+    "status": 201,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "open",
+      "history": [
+        {
+          "status": "open",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createSupportTicket.forbidden",
+    "method": "POST",
+    "path": "/api/v1/support/tickets",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createSupportTicket.failure",
+    "method": "POST",
+    "path": "/api/v1/support/tickets",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listSupportTickets.success",
+    "method": "GET",
+    "path": "/api/v1/support/tickets",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "category": "technical",
+          "agent_id": null,
+          "description": "Не удаётся загрузить документ",
+          "id": "ticket_a1",
+          "status": "open",
+          "history": [
+            {
+              "status": "open",
+              "changed_at": "2026-10-22T12:00:00Z"
+            }
+          ],
+          "attachment_ids": [],
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listSupportTickets.empty",
+    "method": "GET",
+    "path": "/api/v1/support/tickets",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listSupportTickets.forbidden",
+    "method": "GET",
+    "path": "/api/v1/support/tickets",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listSupportTickets.failure",
+    "method": "GET",
+    "path": "/api/v1/support/tickets",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getSupportTicket.success",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "status": 200,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "open",
+      "history": [
+        {
+          "status": "open",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getSupportTicket.forbidden",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getSupportTicket.failure",
+    "method": "GET",
+    "path": "/api/v1/support/tickets/ticket_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateSupportTicket.success",
+    "method": "PATCH",
+    "path": "/api/v1/platform/support/tickets/ticket_a1",
+    "status": 200,
+    "body": {
+      "category": "technical",
+      "agent_id": null,
+      "description": "Не удаётся загрузить документ",
+      "id": "ticket_a1",
+      "status": "open",
+      "history": [
+        {
+          "status": "open",
+          "changed_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "attachment_ids": [],
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateSupportTicket.forbidden",
+    "method": "PATCH",
+    "path": "/api/v1/platform/support/tickets/ticket_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateSupportTicket.failure",
+    "method": "PATCH",
+    "path": "/api/v1/platform/support/tickets/ticket_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createAttachmentIntent.success",
+    "method": "POST",
+    "path": "/api/v1/support/tickets/ticket_a1/attachments",
+    "status": 201,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "pending"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createAttachmentIntent.forbidden",
+    "method": "POST",
+    "path": "/api/v1/support/tickets/ticket_a1/attachments",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createAttachmentIntent.failure",
+    "method": "POST",
+    "path": "/api/v1/support/tickets/ticket_a1/attachments",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadAttachment.success",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/upload",
+    "status": 200,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "pending"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadAttachment.forbidden",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/upload",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "uploadAttachment.failure",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/upload",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "commitAttachment.success",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "status": 200,
+    "body": {
+      "id": "attachment_a1",
+      "ticket_id": "ticket_a1",
+      "filename": "diagnostic.txt",
+      "detected_type": null,
+      "size": 100,
+      "status": "pending"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "commitAttachment.forbidden",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "commitAttachment.failure",
+    "method": "POST",
+    "path": "/api/v1/support/attachments/attachment_a1/commit",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "downloadAttachment.success",
+    "method": "GET",
+    "path": "/api/v1/support/attachments/attachment_a1/download",
+    "status": 200,
+    "body": null,
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "downloadAttachment.forbidden",
+    "method": "GET",
+    "path": "/api/v1/support/attachments/attachment_a1/download",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "downloadAttachment.failure",
+    "method": "GET",
+    "path": "/api/v1/support/attachments/attachment_a1/download",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createContactRequest.success",
+    "method": "POST",
+    "path": "/api/v1/widget/conversations/conv_a1/contact-requests",
+    "status": 201,
+    "body": {
+      "request_id": "lead_a1",
+      "status": "received"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createContactRequest.forbidden",
+    "method": "POST",
+    "path": "/api/v1/widget/conversations/conv_a1/contact-requests",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createContactRequest.failure",
+    "method": "POST",
+    "path": "/api/v1/widget/conversations/conv_a1/contact-requests",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listContactRequests.success",
+    "method": "GET",
+    "path": "/api/v1/contact-requests",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "lead_a1",
+          "agent_id": "agent_a1",
+          "conversation_id": "conv_a1",
+          "message_id": "msg_a1",
+          "contact": "SYNTHETIC_CONTACT",
+          "consent_version": "draft-v1",
+          "status": "new",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listContactRequests.empty",
+    "method": "GET",
+    "path": "/api/v1/contact-requests",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listContactRequests.forbidden",
+    "method": "GET",
+    "path": "/api/v1/contact-requests",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listContactRequests.failure",
+    "method": "GET",
+    "path": "/api/v1/contact-requests",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getContactRequest.success",
+    "method": "GET",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 200,
+    "body": {
+      "id": "lead_a1",
+      "agent_id": "agent_a1",
+      "conversation_id": "conv_a1",
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent_version": "draft-v1",
+      "status": "new",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getContactRequest.forbidden",
+    "method": "GET",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getContactRequest.failure",
+    "method": "GET",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateContactRequest.success",
+    "method": "PATCH",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 200,
+    "body": {
+      "id": "lead_a1",
+      "agent_id": "agent_a1",
+      "conversation_id": "conv_a1",
+      "message_id": "msg_a1",
+      "contact": "SYNTHETIC_CONTACT",
+      "consent_version": "draft-v1",
+      "status": "new",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateContactRequest.forbidden",
+    "method": "PATCH",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "updateContactRequest.failure",
+    "method": "PATCH",
+    "path": "/api/v1/contact-requests/lead_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAuditEvents.success",
+    "method": "GET",
+    "path": "/api/v1/audit-events",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "audit_a1",
+          "account_id": "account_a",
+          "actor_id": "user_a",
+          "action": "agent.created",
+          "resource_type": "agent",
+          "resource_id": "agent_a1",
+          "request_id": "req_demo",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAuditEvents.empty",
+    "method": "GET",
+    "path": "/api/v1/audit-events",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAuditEvents.forbidden",
+    "method": "GET",
+    "path": "/api/v1/audit-events",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listAuditEvents.failure",
+    "method": "GET",
+    "path": "/api/v1/audit-events",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAuditEvent.success",
+    "method": "GET",
+    "path": "/api/v1/audit-events/audit_a1",
+    "status": 200,
+    "body": {
+      "id": "audit_a1",
+      "account_id": "account_a",
+      "actor_id": "user_a",
+      "action": "agent.created",
+      "resource_type": "agent",
+      "resource_id": "agent_a1",
+      "request_id": "req_demo",
+      "created_at": "2026-10-22T12:00:00Z"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAuditEvent.forbidden",
+    "method": "GET",
+    "path": "/api/v1/audit-events/audit_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getAuditEvent.failure",
+    "method": "GET",
+    "path": "/api/v1/audit-events/audit_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createPartnerSession.success",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "status": 201,
+    "body": {
+      "session_token": "fixture-placeholder-not-a-credential",
+      "expires_at": "2026-10-22T12:00:00Z",
+      "conversation_id": "conv_a1",
+      "config_revision": 1,
+      "widget_config": {
+        "schema_version": 1,
+        "name": "Помощник",
+        "avatar_asset_id": null,
+        "greeting": "Чем помочь?",
+        "primary_color": "#2563EB",
+        "background_color": "#FFFFFF",
+        "message_color": "#EFF6FF",
+        "text_color": "#111827",
+        "font_family": "system",
+        "font_size": 16,
+        "radius": 16,
+        "button_shape": "circle",
+        "position": "bottom_right",
+        "offset_x": 24,
+        "offset_y": 24,
+        "icon_id": "chat",
+        "placeholder": "Введите вопрос",
+        "button_label": "Открыть чат"
+      },
+      "consent_version": "draft-v1",
+      "consent_text": "Черновой текст: разрешаю передать контакт компании для ответа."
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "trusted_agent_public_id": "pub_a1"
+  },
+  {
+    "name": "createPartnerSession.forbidden",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "createPartnerSession.failure",
+    "method": "POST",
+    "path": "/api/v1/partner/widget-session",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "issuePartnerCredential.success",
+    "method": "POST",
+    "path": "/api/v1/partner-credentials",
+    "status": 201,
+    "body": {
+      "credential": {
+        "key_id": "key_a1",
+        "partner_id": "partner_a1",
+        "agent_ids": [
+          "agent_a1"
+        ],
+        "scopes": [
+          "widget.session.create"
+        ],
+        "expires_at": "2026-10-22T12:00:00Z",
+        "status": "active"
+      },
+      "secret": "fixture-placeholder-not-a-credential"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "issuePartnerCredential.forbidden",
+    "method": "POST",
+    "path": "/api/v1/partner-credentials",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "issuePartnerCredential.failure",
+    "method": "POST",
+    "path": "/api/v1/partner-credentials",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPartnerCredentials.success",
+    "method": "GET",
+    "path": "/api/v1/partner-credentials",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "key_id": "key_a1",
+          "partner_id": "partner_a1",
+          "agent_ids": [
+            "agent_a1"
+          ],
+          "scopes": [
+            "widget.session.create"
+          ],
+          "expires_at": "2026-10-22T12:00:00Z",
+          "status": "active"
+        }
+      ],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPartnerCredentials.empty",
+    "method": "GET",
+    "path": "/api/v1/partner-credentials",
+    "status": 200,
+    "body": {
+      "items": [],
+      "next_cursor": null
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPartnerCredentials.forbidden",
+    "method": "GET",
+    "path": "/api/v1/partner-credentials",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "listPartnerCredentials.failure",
+    "method": "GET",
+    "path": "/api/v1/partner-credentials",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "revokePartnerCredential.success",
+    "method": "DELETE",
+    "path": "/api/v1/partner-credentials/key_a1",
+    "status": 204,
+    "body": null,
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "revokePartnerCredential.forbidden",
+    "method": "DELETE",
+    "path": "/api/v1/partner-credentials/key_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "revokePartnerCredential.failure",
+    "method": "DELETE",
+    "path": "/api/v1/partner-credentials/key_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "previewAsset.success",
+    "method": "GET",
+    "path": "/api/v1/assets/asset_a1/preview",
+    "status": 200,
+    "body": null,
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "previewAsset.forbidden",
+    "method": "GET",
+    "path": "/api/v1/assets/asset_a1/preview",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "previewAsset.failure",
+    "method": "GET",
+    "path": "/api/v1/assets/asset_a1/preview",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getWidgetAsset.success",
+    "method": "GET",
+    "path": "/api/v1/widget/assets/asset_a1",
+    "status": 200,
+    "body": null,
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getWidgetAsset.forbidden",
+    "method": "GET",
+    "path": "/api/v1/widget/assets/asset_a1",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Недостаточно прав",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "getWidgetAsset.failure",
+    "method": "GET",
+    "path": "/api/v1/widget/assets/asset_a1",
+    "status": 500,
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "widget.unpublished",
+    "method": "POST",
+    "path": "/api/v1/widget/sessions",
+    "status": 403,
+    "body": {
+      "code": "agent_not_published",
+      "message": "Агент ещё не опубликован",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authCsrf.success",
+    "method": "GET",
+    "path": "/api/v1/auth/csrf",
+    "status": 200,
+    "body": {
+      "csrf_token": "fixture-csrf-not-a-credential"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authRegister.success",
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "status": 201,
+    "body": {
+      "identity": {
+        "user_id": "user_a",
+        "account_id": "account_a",
+        "role": "owner",
+        "audit_read": false
+      },
+      "expires_at": "2026-11-03T20:00:00Z",
+      "csrf_token": "fixture-csrf-not-a-credential"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authLogin.success",
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "status": 200,
+    "body": {
+      "identity": {
+        "user_id": "user_a",
+        "account_id": "account_a",
+        "role": "owner",
+        "audit_read": false
+      },
+      "expires_at": "2026-11-03T20:00:00Z",
+      "csrf_token": "fixture-csrf-not-a-credential"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authSession.success",
+    "method": "GET",
+    "path": "/api/v1/auth/session",
+    "status": 200,
+    "body": {
+      "identity": {
+        "user_id": "user_a",
+        "account_id": "account_a",
+        "role": "owner",
+        "audit_read": false
+      },
+      "expires_at": "2026-11-03T20:00:00Z",
+      "csrf_token": "fixture-csrf-not-a-credential"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authLogout.success",
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "status": 204,
+    "body": null,
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authLogin.unauthorized",
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "status": 401,
+    "body": {
+      "code": "unauthorized",
+      "message": "Безопасная ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authRegister.provider_unavailable",
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "status": 503,
+    "body": {
+      "code": "provider_unavailable",
+      "message": "Безопасная ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authLogin.provider_bad_gateway",
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "status": 502,
+    "body": {
+      "code": "provider_bad_gateway",
+      "message": "Безопасная ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "authLogout.forbidden",
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "status": 403,
+    "body": {
+      "code": "forbidden",
+      "message": "Безопасная ошибка",
+      "request_id": "req_demo"
+    },
+    "headers": {
+      "Cache-Control": "no-store"
+    }
+  },
+  {
+    "name": "sendWidgetMessage.accepted",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 202,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "operation_id": "op_demo_1",
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "accepted"
+    }
+  },
+  {
+    "name": "sendWidgetMessage.generating",
+    "method": "POST",
+    "path": "/api/v1/widget/messages",
+    "status": 202,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "operation_id": "op_demo_1",
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "generating"
+    }
+  },
+  {
+    "name": "sendTestChat.accepted",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "status": 202,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "operation_id": "op_demo_1",
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "accepted"
+    }
+  },
+  {
+    "name": "sendTestChat.generating",
+    "method": "POST",
+    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "status": 202,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "operation_id": "op_demo_1",
+      "message_id": "msg_a1",
+      "conversation_id": "conv_a1",
+      "status": "generating"
+    }
+  },
+  {
+    "name": "listWidgetMessages.success",
+    "method": "GET",
+    "path": "/api/v1/widget/messages",
+    "status": 200,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "items": [
+        {
+          "id": "msg_a1",
+          "conversation_id": "conv_a1",
+          "status": "completed",
+          "question": "Какие сроки доставки?",
+          "answer": "Три дня.",
+          "created_at": "2026-10-22T12:00:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "listWidgetMessages.empty",
+    "method": "GET",
+    "path": "/api/v1/widget/messages",
+    "status": 200,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "items": [],
+      "next_cursor": null
+    }
+  },
+  {
+    "name": "listWidgetMessages.forbidden",
+    "method": "GET",
+    "path": "/api/v1/widget/messages",
+    "status": 403,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "code": "forbidden",
+      "message": "Нет доступа к диалогу",
+      "request_id": "req_demo"
+    }
+  },
+  {
+    "name": "listWidgetMessages.failure",
+    "method": "GET",
+    "path": "/api/v1/widget/messages",
+    "status": 500,
+    "headers": {
+      "Cache-Control": "no-store"
+    },
+    "body": {
+      "code": "internal_error",
+      "message": "Внутренняя ошибка",
+      "request_id": "req_demo"
+    }
+  }
+]

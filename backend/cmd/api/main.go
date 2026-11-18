@@ -61,11 +61,15 @@ func run(logger *slog.Logger) (err error) {
 		health.Check = pool.PingContext
 	}
 	var auth *handlers.AuthHandler
+	var agents *handlers.AgentHandler
 	if cfg.AuthEnabled {
-		auth = handlers.NewAuthHandler(service.New(repository.NewAuth(pool), authprovider.NewSupabase(cfg.SupabaseURL, cfg.SupabaseKey)), cfg.AuthOrigin, cfg.AuthAllowInsecureHTTP)
+		authService := service.New(repository.NewAuth(pool), authprovider.NewSupabase(cfg.SupabaseURL, cfg.SupabaseKey))
+		auth = handlers.NewAuthHandler(authService, cfg.AuthOrigin, cfg.AuthAllowInsecureHTTP)
+		agentStore := repository.NewAgents(pool)
+		agents = handlers.NewAgentHandler(authService, service.NewAgents(pool, agentStore, service.NewAudit(repository.NewAudit()), agentStore, cfg.AgentCursorKey), cfg.AuthOrigin)
 	}
 	server := &http.Server{
-		Handler:           handlers.NewHandler(health, auth),
+		Handler:           handlers.NewHandler(health, auth, agents),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,

@@ -1,11 +1,15 @@
 package dto
 
 type AgentCreate struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	Website     string `json:"website"`
+	Description string `json:"description"`
 }
 
 type AgentUpdate struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	Website     string `json:"website"`
+	Description string `json:"description"`
 }
 
 type Agent struct {
@@ -13,6 +17,8 @@ type Agent struct {
 	AccountID               string `json:"account_id"`
 	PublicID                string `json:"public_id"`
 	Name                    string `json:"name"`
+	Website                 string `json:"website"`
+	Description             string `json:"description"`
 	Status                  string `json:"status"`
 	Revision                int64  `json:"revision"`
 	KnowledgeRevision       int64  `json:"knowledge_revision"`

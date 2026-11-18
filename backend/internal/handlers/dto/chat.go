@@ -95,3 +95,10 @@ type UnansweredPage struct {
 	Items      []Unanswered `json:"items"`
 	NextCursor *string      `json:"next_cursor"`
 }
+
+type ChatOperation struct {
+	OperationID    string `json:"operation_id"`
+	MessageID      string `json:"message_id"`
+	ConversationID string `json:"conversation_id"`
+	Status         string `json:"status"`
+}
