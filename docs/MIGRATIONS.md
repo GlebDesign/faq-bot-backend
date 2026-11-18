@@ -2,11 +2,22 @@
 
 API не создаёт таблицы при старте. Изменения схемы применяет отдельная программа
 `cmd/migrate` на golang-migrate v4. В [каталоге SQL](../backend/migrations)
-находятся пары `000001_identity` и `000002_audit` (`up.sql`/`down.sql`).
+находятся пары `000001_identity`, `000002_audit` и `000006_trial_bootstrap` (`up.sql`/`down.sql`).
 Первая создаёт `users`, `accounts`, `account_members`, `sessions`, вторая —
-`audit_events` с ограничениями и индексами. Текущая версия схемы — 2.
+`audit_events` с ограничениями и индексами. Последняя добавляет намерения пробного начисления
+`trial_bootstrap_intents`. Текущая версия этого каталога — 6.
+Номер 6 выбран после уже подготовленных отдельных изменений схемы 3–5.
+Перед установкой согласовать полный состав SQL-файлов поставки: runner не применяет
+файлы с номером ниже уже установленной версии. Если поставка включает версии 3–5,
+они должны быть в каталоге до первого применения версии 6. Не добавлять их
+задним числом и не переименовывать уже применённые миграции.
+Текущий каталог 1/2/6 предназначен для отдельной разработки. Установку общего
+выпуска остановить до включения согласованных версий 3–5; назначение номера
+не заменяет их интеграцию. Для локальной проверки допустима отдельная тестовая БД.
 Подготовка БД — в [DATABASE.md](DATABASE.md), обновление —
-в [карточке 0.0.2](upgrade_cluster/release_0.0.2.md).
+в [карточке 0.0.2](upgrade_cluster/release_0.0.2.md) только для исходного снимка
+этого выпуска. Версия выпуска с подготовкой trial ещё не назначена;
+описанный здесь порядок не означает разрешение установки несогласованного каталога.
 
 ## Окружение и подключение
 
@@ -66,7 +77,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 SELECT to_regclass('public.schema_migrations') AS history;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','trial_bootstrap_intents')
 ORDER BY tablename;
 ```
 
@@ -78,8 +89,10 @@ runner поверх них. Если history не NULL, отдельно вып�
 SELECT version, dirty FROM public.schema_migrations;
 ```
 
-Версия 1 с dirty=false допускает обновление до 2; версия 2 с dirty=false —
-повторный запуск. Dirty=true или версия выше 2 требуют остановки и проверки
+Версии 1 и 2 с dirty=false допускают обновление до 6 после проверки состава
+поставки; версия 6 с dirty=false — повторный запуск того же каталога. Версии 3–5
+требуют сверки исторических файлов с согласованной поставкой.
+Dirty=true или версия выше 6 требуют остановки и проверки
 по разделу ошибок. Пустая history допускается только при отсутствии таблиц
 приложения. Существующую схему сверить с применёнными миграциями до продолжения.
 
@@ -120,8 +133,10 @@ env -u SUPABASE_URL -u SUPABASE_KEY -u AUTH_ORIGIN -u AUTH_ALLOW_INSECURE_HTTP \
 
 Ожидаются exit code 0 и JSON-лог `migrations are up to date`.
 Runner вызывает `Up()` и применяет все ожидающие миграции из указанного каталога,
-а не одну выбранную версию. На пустой БД это 000001 и 000002, на версии 1 —
-000002, на чистой версии 2 — отсутствие изменений. Не подменять каталог неполным
+а не одну выбранную версию. В текущем каталоге на пустой БД это 000001, 000002
+и 000006, на версии 1 — 000002 и 000006, на версии 2 — 000006, на чистой
+версии 6 — отсутствие изменений. Дополнительные версии согласованной поставки
+тоже выполняются в порядке номеров. Не подменять каталог неполным
 набором SQL ради выбора одной миграции. Повторный запуск
 той же команды допустим: уже применённая миграция повторно не выполняется.
 
@@ -161,7 +176,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 ```sql
 SELECT version, dirty FROM public.schema_migrations;
 SELECT name, to_regclass('public.' || name) AS actual_table
-FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events')) AS t(name);
+FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events'), ('trial_bootstrap_intents')) AS t(name);
 SELECT to_regclass('public.sessions_expiry_idx') AS expiry_index;
 SELECT indexname, indexdef FROM pg_indexes
 WHERE schemaname='public' AND tablename='audit_events' ORDER BY indexname;
@@ -170,11 +185,11 @@ FROM pg_constraint WHERE conrelid='public.audit_events'::regclass
 ORDER BY conname;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','trial_bootstrap_intents')
 ORDER BY tablename;
 ```
 
-Ожидаются одна строка `version=2, dirty=false`, пять ненулевых `actual_table`,
+Ожидаются одна строка `version=6, dirty=false`, шесть ненулевых `actual_table`,
 индекс сессий, шесть индексов аудита (PK, unique ключ и четыре поисковых)
 и владелец-migrator. Все ограничения должны быть валидны и соответствовать
 [000002 up](../backend/migrations/000002_audit.up.sql): PK/unique, FK компании,
@@ -183,6 +198,10 @@ SQL проверяет форму action/entity, но не весь прикла
 metadata из [AUDIT.md](AUDIT.md). На новой БД таблицы данных
 пусты. После повторного runner версия и `dirty` остаются такими же.
 Наличие таблиц само по себе не подтверждает историю и права API.
+Для `trial_bootstrap_intents` сверить PK по account_id, FK на accounts,
+NOT NULL для всех полей и CHECK единственного состояния pending с
+[000006 up](../backend/migrations/000006_trial_bootstrap.up.sql).
+Обновление оставляет таблицу пустой: старым компаниям trial автоматически не назначается.
 
 ## Права API после миграции
 
@@ -196,6 +215,8 @@ GRANT SELECT, INSERT ON public.users, public.accounts, public.account_members TO
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO :"api_role";
 REVOKE UPDATE, DELETE, TRUNCATE ON public.audit_events FROM :"api_role";
 GRANT SELECT, INSERT ON public.audit_events TO :"api_role";
+REVOKE UPDATE, DELETE, TRUNCATE ON public.trial_bootstrap_intents FROM :"api_role";
+GRANT INSERT ON public.trial_bootstrap_intents TO :"api_role";
 COMMIT;
 ```
 
@@ -231,9 +252,13 @@ SELECT
    AND has_table_privilege(current_user,'public.sessions','DELETE')) AS sessions_access,
   (has_table_privilege(current_user,'public.audit_events','SELECT')
    AND has_table_privilege(current_user,'public.audit_events','INSERT')) AS audit_access,
+  has_table_privilege(current_user,'public.trial_bootstrap_intents','INSERT') AS trial_insert,
   has_table_privilege(current_user,'public.audit_events','UPDATE') AS audit_update,
   has_table_privilege(current_user,'public.audit_events','DELETE') AS audit_delete,
-  has_table_privilege(current_user,'public.audit_events','TRUNCATE') AS audit_truncate;
+  has_table_privilege(current_user,'public.audit_events','TRUNCATE') AS audit_truncate,
+  has_table_privilege(current_user,'public.trial_bootstrap_intents','UPDATE') AS trial_update,
+  has_table_privilege(current_user,'public.trial_bootstrap_intents','DELETE') AS trial_delete,
+  has_table_privilege(current_user,'public.trial_bootstrap_intents','TRUNCATE') AS trial_truncate;
 SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls
 FROM pg_roles WHERE rolname=current_user;
 SELECT has_schema_privilege(current_user,'public','CREATE') AS schema_create;
@@ -241,16 +266,17 @@ SELECT tablename FROM pg_tables
 WHERE schemaname='public' AND tableowner=current_user;
 ```
 
-Ожидаются роль API, целевая БД, схема `public`, шесть положительных проверок
-доступа, audit_update/audit_delete/audit_truncate=false, четыре административных флага `false`, `schema_create=false` и отсутствие таблиц
+Ожидаются роль API, целевая БД, схема `public`, семь положительных проверок
+доступа, audit_update/audit_delete/audit_truncate=false и
+trial_update/trial_delete/trial_truncate=false, четыре административных флага `false`, `schema_create=false` и отсутствие таблиц
 во владении API. При другом результате администратор проверяет унаследованные
 привилегии и роли. Эти запросы не меняют grants и не заменяют пробный вход:
 RLS и дополнительные ограничения существующей БД могут влиять на запросы.
 
 Seed-данные не требуются, в том числе для `audit_events`. Не вставлять
 фиктивные события в рабочий журнал для проверки установки. При первом успешном входе/регистрации приложение
-создаёт пользователя, компанию и членство `owner` с `audit_read=false` в одной
-транзакции. Сессии создаёт backend; пароли и пользователей Supabase вручную
+создаёт пользователя, компанию, членство `owner` с `audit_read=false` и одно
+намерение trial в одной транзакции. Сессии создаёт backend; пароли и пользователей Supabase вручную
 в SQL не вставлять. Повторный вход того же subject сохраняет компанию.
 
 ## Проверка данных авторизации
@@ -303,11 +329,21 @@ runner и проверки версии/dirty.
 ## Новые миграции и откат
 
 Имя файла содержит номер, название и `.up.sql`/`.down.sql`. Следующая миграция
-получает новый номер; уже применённые SQL-файлы не меняются. В обеих парах
+получает новый номер; уже применённые SQL-файлы не меняются. Во всех парах
 используются явные `BEGIN`/`COMMIT`. Операции вне транзакций, например
 `CREATE INDEX CONCURRENTLY`, требуют отдельного файла и плана восстановления.
 
-Встроенный runner выполняет только `up`. Down версии 2 удаляет только
+Встроенный runner выполняет только `up`. Down версии 6 удаляет
+`trial_bootstrap_intents` и теряет сохранённые намерения. Перед откатом остановить
+новый API и сохранить копию. Обычный откат приложения сохраняет схему и намерения;
+предыдущий API их не обрабатывает. На время отката отключить новые регистрации:
+старый API создаёт компании без намерений, и последующее обновление не
+добавит их для уже известных subject. Если такие регистрации всё же произошли,
+нужна отдельная согласованная сверка eligibility и восстановление намерений;
+автоматической процедуры восстановления сейчас нет. При повторном up потерянные намерения не
+восстанавливаются: bootstrap не создаёт их для старого subject. Поэтому down/up
+не является безопасным способом отката данных.
+Down версии 2 удаляет только
 `audit_events` с журналом; down версии 1 — четыре таблицы авторизации.
 Прямое исполнение down через psql не меняет `schema_migrations` и оставит
 историю несогласованной. Откат приложения

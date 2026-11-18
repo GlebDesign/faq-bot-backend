@@ -41,11 +41,13 @@ psql "$DATABASE_URL" -c 'SELECT 1;'
 psql "$DATABASE_URL" -c 'SELECT version, dirty FROM schema_migrations;'
 ```
 
-После применения всех миграций ожидается `version=2`, `dirty=false`.
+После применения всех миграций ожидается `version=6`, `dirty=false`.
 Для production следует разделить роли: migrator меняет схему, API выполняет
 только нужные запросы к данным. Автоматического создания ролей в проекте нет.
 Роли API достаточно `CONNECT` к БД, `USAGE` схемы, `SELECT, INSERT` для `users`,
 `accounts`, `account_members` и `SELECT, INSERT, UPDATE, DELETE` для `sessions`.
+Для `trial_bootstrap_intents` API нужен INSERT; SELECT для диагностики выполняется
+отдельной ролью. UPDATE/DELETE/TRUNCATE и DDL для этой таблицы API не нужны.
 Для `audit_events` нужны `SELECT, INSERT`: SELECT сравнивает повтор по ключу,
 UPDATE/DELETE/TRUNCATE запрещены. Прав на изменение схемы и доступ к
 `schema_migrations` API не требуется.
@@ -63,14 +65,17 @@ UUID создаёт Go, последовательности и расширен
 | `account_members` | Связь пользователя с компанией, `owner`/`admin`, `audit_read` |
 | `sessions` | SHA-256 хеш токена, CSRF, user/account, сроки absolute/idle, отзыв |
 | `audit_events` | Внутренний журнал с серверным ключом, scope, actor, объектом, исходом и безопасными metadata |
+| `trial_bootstrap_intents` | Одна pending-запись на новую компанию; account_id — PK/FK, created_at; без лимита и баланса |
 | `schema_migrations` | Версия схемы и признак незавершённого применения |
 
 Email, пароль и токены Supabase backend не сохраняет.
 При первом успешном входе пользователь, компания и роль владельца создаются
-в одной транзакции. Повтор по тому
+в одной транзакции вместе с намерением trial. Повтор по тому
 же идентификатору Supabase не создаёт вторую компанию. Текущий SQL выбирает первое членство
 по ID компании; переключения компаний через API нет. Удалённое членство не
 восстанавливается автоматически. У предварительной сессии user_id и account_id равны NULL.
+Старые компании при обновлении не получают намерений автоматически.
+Порядок версий и проверка состава поставки — в [MIGRATIONS.md](MIGRATIONS.md).
 Истёкшие и отозванные сессии очищаются при выдаче следующей сессии, фонового уборщика нет.
 
 ## Соединения и транзакции
@@ -106,7 +111,7 @@ go test -count=1 -v ./...
 
 Тесты сами готовят необходимые схемы, предварительный migrate в тестовую БД не
 требуется. Без TEST_DATABASE_URL SQL-проверки пропускаются; это не проверка БД.
-Для проверки прав журнала дополнительно задаётся `TEST_AUDIT_ROLE`: имя заранее
+Для проверки прав журнала и регистрации дополнительно задаётся `TEST_AUDIT_ROLE`: имя заранее
 созданной отдельной роли NOLOGIN без SUPERUSER, CREATEDB, CREATEROLE, REPLICATION,
 BYPASSRLS, владения таблицами и прав DDL. Роль не должна наследовать расширенные
 права. В отдельной локальной тестовой БД администратор может подготовить её так
@@ -121,7 +126,7 @@ GRANT audit_test_writer TO test_database_user;
 
 ```sh
 export TEST_AUDIT_ROLE='audit_test_writer'
-go test -count=1 -v ./internal/migration -run '^TestAuditSQLRestrictedRole$'
+go test -count=1 -v ./internal/migration -run '^Test(AuditSQL|Registration)RestrictedRole$'
 ```
 
 Пользователю `TEST_DATABASE_URL` нужны права создания изолированных схем,
@@ -130,8 +135,9 @@ go test -count=1 -v ./internal/migration -run '^TestAuditSQLRestrictedRole$'
 переключает роль через SET LOCAL ROLE и проверяет настоящий INSERT, повтор,
 SELECT и запреты UPDATE/DELETE/TRUNCATE с SQLSTATE 42501. Схема и её grants
 удаляются при очистке. Глобальные роли тесты и приложение не создают.
-Без `TEST_AUDIT_ROLE` только `TestAuditSQLRestrictedRole` явно пропускается
-с сообщением `set TEST_AUDIT_ROLE for audit INSERT/SELECT and denied UPDATE/DELETE/TRUNCATE checks`;
+Без `TEST_AUDIT_ROLE` обе проверки явно пропускаются. Журнал сообщает
+`set TEST_AUDIT_ROLE for audit INSERT/SELECT and denied UPDATE/DELETE/TRUNCATE checks`,
+регистрация — `set TEST_AUDIT_ROLE for restricted registration checks`;
 остальным SQL-тестам эта переменная и CREATEROLE не нужны. Пропуск этого теста
 не подтверждает проверку прав.
 
@@ -142,3 +148,9 @@ SELECT и запреты UPDATE/DELETE/TRUNCATE с SQLSTATE 42501. Схема и
 Аудит и бизнес-изменение записываются одной транзакцией вызывающего сервиса.
 Ссылка на компанию не каскадная, actor и объект сохраняются как идентификаторы
 без каскадного удаления. Подробнее — [AUDIT.md](AUDIT.md).
+
+Проверка `TestRegistrationRestrictedRole` использует ту же ограниченную NOLOGIN-роль
+в отдельной схеме. Под ней выполняются bootstrap, повтор и чтение сессии;
+для trial-таблицы выдан только INSERT. Отзыв INSERT вызывает ошибку 42501
+и rollback user/account/owner. Право SELECT для проверки данных остаётся
+у владельца тестовой схемы.

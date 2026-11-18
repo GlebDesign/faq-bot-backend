@@ -51,6 +51,10 @@ func (a *Auth) Bootstrap(ctx context.Context, subject string) (models.Identity, 
 						VALUES($1,$2,'owner')`, userID, accountID); err != nil {
 				return db.WrapError("create owner membership", err)
 			}
+			if _, err := tx.ExecContext(ctx,
+				`INSERT INTO trial_bootstrap_intents(account_id) VALUES($1)`, accountID); err != nil {
+				return db.WrapError("create trial bootstrap intent", err)
+			}
 		}
 		err = tx.QueryRowContext(ctx, `SELECT u.id,m.account_id,m.role,m.audit_read FROM users u JOIN account_members m ON m.user_id=u.id WHERE u.auth_subject=$1 ORDER BY m.account_id LIMIT 1`, subject).Scan(&identity.UserID, &identity.AccountID, &identity.Role, &identity.AuditRead)
 		if errors.Is(err, sql.ErrNoRows) {
