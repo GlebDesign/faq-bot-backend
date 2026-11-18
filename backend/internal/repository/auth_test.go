@@ -59,12 +59,14 @@ func testAuth(t *testing.T) *Auth {
 		}
 	})
 	pool = scoped
-	migration, err := os.ReadFile(filepath.Join("..", "..", "migrations", "000001_identity.up.sql"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := pool.Exec(string(migration)); err != nil {
-		t.Fatal(err)
+	for _, name := range []string{"000001_identity.up.sql", "000006_trial_bootstrap.up.sql"} {
+		migration, err := os.ReadFile(filepath.Join("..", "..", "migrations", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := pool.Exec(string(migration)); err != nil {
+			t.Fatal(err)
+		}
 	}
 	return NewAuth(pool)
 }
