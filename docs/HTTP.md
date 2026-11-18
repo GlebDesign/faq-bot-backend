@@ -168,7 +168,8 @@ POST/PATCH принимают только JSON с тремя обязатель
 1..100 Unicode символов и хотя бы один символ вне White_Space; пробелы сохраняются.
 Website/description могут быть пустыми. Website не проверяется как URL и не загружается.
 DELETE принимает пустое тело. Scope нельзя задать через тело, query или headers.
-UUID чужой компании, public_id вместо UUID и tombstone дают 404.
+UUID чужой компании и public_id вместо UUID дают 404. GET и список скрывают
+tombstone; новые PATCH/DELETE с новым Idempotency-Key для него дают 404.
 
 Список принимает только `limit` (1..100, default 20) и `cursor`, по одному значению.
 Сортировка — created_at DESC,id DESC; пустая страница содержит items=[] и
@@ -187,7 +188,11 @@ account+actor+operation+resource; для создания resource пуст. SHA
 UUID не зависит от Request-ID. Конкурентные запросы с одним ключом сохраняют одно
 изменение и один audit; replay возвращает исходный JSON/ID и код ответа после
 новой проверки сессии/прав. Replay PATCH проверяется до stale revision. Другой
-payload с тем же ключом — 409 idempotency_conflict.
+payload с тем же ключом — 409 idempotency_conflict. Ранее успешные POST/PATCH/DELETE
+с исходными ключом и payload возвращают сохранённый результат даже после
+удаления агента. Для PATCH нужен и исходный If-Match. Перед replay заново
+проверяются текущие сессия, membership и роль; отзыв сессии или membership даёт
+401. Такой replay не восстанавливает агента и не открывает к нему новый доступ.
 
 DELETE не требует If-Match. Он в одной SQL-транзакции создаёт tombstone,
 agent.deleted audit и agent_cleanup_requests со статусом pending; 202 означает
