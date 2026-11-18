@@ -1,0 +1,13 @@
+.git
+.idea
+.agents
+.codex
+.local
+_bmad
+_bmad-output
+**/AGENTS.md
+**/.env
+**/.env.*
+**/*_test.go
+backend/bin
+backend/tmp

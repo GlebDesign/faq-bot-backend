@@ -4,6 +4,7 @@ from dataclasses import replace
 import pytest
 from langchain_core.runnables import RunnableLambda
 
+from faq_ai import cli
 from faq_ai.backends import demo_backend
 from faq_ai.config import Settings
 from faq_ai.models import AnswerDraft, AppError, Claim, Scope
@@ -42,6 +43,35 @@ def test_known_and_missing(setup):
     service, _, scope, _ = setup
     missing = service.ask(scope, "Кто открыл Плутон?")
     assert not missing.has_answer and not missing.sources
+
+
+def test_cli_manual_text_keeps_russian_and_source(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "ollama_backend", lambda _: demo_backend())
+    monkeypatch.setenv("MIN_SCORE", "0.05")
+    database = ["--db", str(tmp_path / "manual.sqlite3")]
+    scope = ["--account", "north", "--agent", "sales"]
+    quote = "Доставка в Москву стоит 500 рублей."
+    assert cli.main([*database, "ingest-text", *scope, "--document", "delivery",
+                     "--name", "Условия доставки", quote]) == 0
+    capsys.readouterr()
+    assert cli.main([*database, "ask", *scope, "Сколько стоит доставка в Москву?"]) == 0
+    answer = json.loads(capsys.readouterr().out)
+    assert answer["has_answer"]
+    assert answer["sources"][0]["filename"] == "Условия доставки"
+    assert answer["sources"][0]["quote"] == quote
+
+
+@pytest.mark.parametrize("text,code", [(" \r\n ", "invalid_document"),
+                                      ("я" * 1_000_001, "file_too_large")],
+                         ids=["blank", "over-utf8-byte-limit"])
+def test_invalid_manual_text_does_not_replace_index(setup, text, code):
+    first = ingest(setup)
+    service, store, scope, _ = setup
+    with pytest.raises(AppError) as error:
+        service.ingest_text(scope, text, "delivery", "Условия доставки")
+    assert error.value.code == code
+    assert store.revision(scope) == first["knowledge_version"]
+    assert "500" in ask(setup).answer
 
 
 @pytest.mark.parametrize("other", [Scope(account_id="south", agent_id="sales"),

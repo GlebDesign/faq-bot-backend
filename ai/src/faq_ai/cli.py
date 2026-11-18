@@ -48,14 +48,17 @@ def parser():
     commands = root.add_subparsers(dest="command", required=True)
     commands.add_parser("demo", help="Автономная проверка на детерминированных заменах моделей")
     commands.add_parser("doctor", help="Проверить окружение и наличие моделей в Ollama")
-    for name in ("ingest", "ask", "delete", "status"):
+    for name in ("ingest", "ingest-text", "ask", "delete", "status"):
         command = commands.add_parser(name)
         command.add_argument("--account", required=True)
         command.add_argument("--agent", required=True)
-        if name in {"ingest", "delete"}:
+        if name in {"ingest", "ingest-text", "delete"}:
             command.add_argument("--document", required=True, help="Стабильный ID документа для замены/удаления")
         if name == "ingest":
             command.add_argument("file", type=Path)
+        if name == "ingest-text":
+            command.add_argument("--name", required=True, help="Название источника в ответе")
+            command.add_argument("text", help="Текст для индексации")
         if name == "ask":
             command.add_argument("question")
     return root
@@ -93,6 +96,8 @@ def main(argv=None) -> int:
                 service = RagService(store, ollama_backend(settings), settings)
                 if args.command == "ingest":
                     emit(service.ingest(scope, args.file, args.document))
+                elif args.command == "ingest-text":
+                    emit(service.ingest_text(scope, args.text, args.document, args.name))
                 else:
                     emit(service.ask(scope, args.question).model_dump())
         finally:
