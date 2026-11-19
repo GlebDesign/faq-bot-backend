@@ -1,0 +1,97 @@
+name: faq-ai18
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: faq_ai18
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${AI_TEST_DB_PASSWORD:?Generate ai/.runtime/integration.env first}
+    ports: ["127.0.0.1:55432:5432"]
+    mem_limit: 512m
+    volumes: ["ai18-postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d faq_ai18"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: faq_ai18
+      RABBITMQ_DEFAULT_PASS: ${AI_TEST_MQ_PASSWORD:?Generate ai/.runtime/integration.env first}
+      RABBITMQ_DEFAULT_VHOST: ai18
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "+S 2:2"
+    ports: ["127.0.0.1:55672:5672", "127.0.0.1:55673:15672"]
+    mem_limit: 512m
+    volumes: ["ai18-rabbitmq:/var/lib/rabbitmq"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  grpc:
+    profiles: ["services"]
+    build: {context: ., dockerfile: ai/Dockerfile}
+    image: faq-ai18-runtime
+    environment: &ai-env
+      AI_DATABASE_URL: ${AI_CONTAINER_DATABASE_URL:?Bootstrap integration credentials}
+      AI_AMQP_URL: ${AI_CONTAINER_AMQP_URL:?Bootstrap integration credentials}
+      AI_SERVICE_TOKEN: ${AI_SERVICE_TOKEN:?Bootstrap integration credentials}
+      AI_SOURCE_ROOT: /sources
+      AI_BACKEND: ${AI_BACKEND:-ollama}
+      AI_EMBEDDING_DIMENSION: ${AI_EMBEDDING_DIMENSION:-1024}
+      AI_EMBEDDING_DIGEST: ac6da0dfba84a81fdbfbaf330198c33cd77c4cdfc53e8bc50eb581914a15621d
+      AI_GENERATION_DIGEST: 0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0
+      AI_GRPC_LISTEN: 0.0.0.0:50051
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      LLM_MODEL: qwen3:4b-instruct-2507-q4_K_M
+      EMBEDDING_MODEL: qwen3-embedding:0.6b
+      MODEL_THREADS: 4
+      MODEL_KEEP_ALIVE: 0
+      OLLAMA_TIMEOUT: 180
+      LLM_CONTEXT_TOKENS: 4096
+      LLM_MAX_TOKENS: 768
+      LLM_THINKING: "false"
+      LLM_TEMPERATURE: 0.7
+      LLM_TOP_P: 0.8
+      LLM_TOP_K: 20
+      LLM_REPEAT_PENALTY: 1.1
+      LLM_SEED: 42
+      QUOTE_ONLY_ANSWERS: "true"
+      MIN_SCORE: 0.3
+      CONTEXT_CHARS: 3000
+    ports: ["127.0.0.1:50051:50051"]
+    mem_limit: 512m
+    volumes: ["./ai/.runtime/integration/sources:/sources:ro"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-m", "faq_ai.healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  worker:
+    profiles: ["services"]
+    image: faq-ai18-runtime
+    build: {context: ., dockerfile: ai/Dockerfile}
+    command: ["python", "-m", "faq_ai.worker"]
+    environment: *ai-env
+    mem_limit: 768m
+    volumes: ["./ai/.runtime/integration/sources:/sources:ro"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+  coordinator:
+    profiles: ["services"]
+    image: faq-ai18-coordinator
+    build: {context: ., dockerfile: backend/Dockerfile.knowledge}
+    environment:
+      DATABASE_URL: ${GO_RUNTIME_DATABASE_URL:?Bootstrap integration credentials}
+      AI_AMQP_URL: ${AI_CONTAINER_AMQP_URL:?Bootstrap integration credentials}
+    mem_limit: 128m
+    depends_on:
+      postgres: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+volumes:
+  ai18-postgres:
+  ai18-rabbitmq:

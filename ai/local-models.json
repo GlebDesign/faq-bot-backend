@@ -1,0 +1,20 @@
+{
+  "OLLAMA_BASE_URL": "http://127.0.0.1:11434",
+  "LLM_MODEL": "qwen3:4b-instruct-2507-q4_K_M",
+  "EMBEDDING_MODEL": "qwen3-embedding:0.6b",
+  "EMBEDDING_REVISION": "qwen3-embedding-0.6b-v1",
+  "OLLAMA_TIMEOUT": "180",
+  "LLM_CONTEXT_TOKENS": "4096",
+  "LLM_MAX_TOKENS": "768",
+  "LLM_THINKING": "false",
+  "MODEL_THREADS": "4",
+  "MODEL_KEEP_ALIVE": "0",
+  "CONTEXT_CHARS": "3000",
+  "MIN_SCORE": "0.3",
+  "LLM_TEMPERATURE": "0.7",
+  "LLM_TOP_P": "0.8",
+  "LLM_TOP_K": "20",
+  "LLM_REPEAT_PENALTY": "1.1",
+  "LLM_SEED": "42",
+  "QUOTE_ONLY_ANSWERS": "true"
+}

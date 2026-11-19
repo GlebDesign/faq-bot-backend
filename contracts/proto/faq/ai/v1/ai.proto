@@ -1,0 +1,47 @@
+syntax = "proto3";
+package faq.ai.v1;
+option go_package = "faqbot/backend/internal/aipb";
+
+// Internal unary API. Scope and history MUST originate in authenticated Go code.
+service AIService {
+  rpc GenerateAnswer(GenerateAnswerRequest) returns (GenerateAnswerResponse);
+}
+message HistoryMessage { string role = 1; string text = 2; }
+message GenerateAnswerRequest {
+  string request_id = 1;
+  string trace_id = 2;
+  string account_id = 3;
+  string agent_id = 4;
+  string conversation_id = 5;
+  string question = 6;
+  repeated HistoryMessage history = 7;
+  optional int64 knowledge_revision = 8;
+}
+message Source {
+  string document_id = 1;
+  int64 document_version = 2;
+  string chunk_id = 3;
+  string display_name = 4;
+  string excerpt = 5;
+  int32 page = 6;
+  string heading = 7;
+  int64 start_char = 8;
+  double score = 9;
+}
+message Usage {
+  bool available = 1;
+  optional int64 input_tokens = 2;
+  optional int64 output_tokens = 3;
+}
+message GenerateAnswerResponse {
+  string request_id = 1;
+  string answer = 2;
+  bool has_answer = 3;
+  string reason = 4;
+  repeated Source sources = 5;
+  int64 knowledge_revision = 6;
+  Usage usage = 7;
+  string generation_model = 8;
+  string embedding_model = 9;
+  string prompt_version = 10;
+}

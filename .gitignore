@@ -37,3 +37,6 @@ backend/internal/safeerr/
 _bmad/
 _bmad-output/
 **/AGENTS.md
+
+!contracts/proto/
+!contracts/ai/

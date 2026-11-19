@@ -47,7 +47,7 @@ HTTP-обработчик не выполняет SQL. Работа с табл�
 порядок действий — в сервисе. Конкретные зависимости связываются в `cmd/api`.
 Это помогает отдельно проверять HTTP, логику входа и работу с БД.
 
-Python-модуль `ai` запускается отдельно. Go-сервер к нему не обращается.
+Python-модуль `ai` запускается отдельно: gRPC и AMQP worker. Go-пакеты `aiclient` и `knowledge`, команды `ai-check` и `knowledge-worker` используют общий protobuf, очередь и PostgreSQL metadata. Публичный HTTP-сервер пока не вызывает AI: Chat/Document HTTP orchestration остаётся отдельной задачей. Подробности — [AI_INTEGRATION](AI_INTEGRATION.md).
 Доступные маршруты перечислены в [HTTP.md](HTTP.md), запуск — в [BACKEND.md](BACKEND.md).
 
 ## Отдельные правила заданий

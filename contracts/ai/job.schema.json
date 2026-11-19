@@ -1,0 +1,88 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "event_type": {
+      "enum": [
+        "document.index",
+        "document.delete",
+        "document.reindex"
+      ],
+      "title": "Event Type",
+      "type": "string"
+    },
+    "job_id": {
+      "format": "uuid",
+      "title": "Job Id",
+      "type": "string"
+    },
+    "operation_id": {
+      "format": "uuid",
+      "title": "Operation Id",
+      "type": "string"
+    },
+    "account_id": {
+      "format": "uuid",
+      "title": "Account Id",
+      "type": "string"
+    },
+    "agent_id": {
+      "format": "uuid",
+      "title": "Agent Id",
+      "type": "string"
+    },
+    "document_id": {
+      "format": "uuid",
+      "title": "Document Id",
+      "type": "string"
+    },
+    "document_version": {
+      "minimum": 1,
+      "title": "Document Version",
+      "type": "integer"
+    },
+    "knowledge_revision": {
+      "minimum": 1,
+      "title": "Knowledge Revision",
+      "type": "integer"
+    },
+    "request_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Request Id",
+      "type": "string"
+    },
+    "trace_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Trace Id",
+      "type": "string"
+    },
+    "attempt": {
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Attempt",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "event_type",
+    "job_id",
+    "operation_id",
+    "account_id",
+    "agent_id",
+    "document_id",
+    "document_version",
+    "knowledge_revision",
+    "request_id",
+    "trace_id",
+    "attempt"
+  ],
+  "title": "Job",
+  "type": "object"
+}

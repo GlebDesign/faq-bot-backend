@@ -1,0 +1,18 @@
+{
+  "question": "Сколько стоит доставка в Москву?",
+  "request_base64": "Cg53aXJlLXJlcXVlc3QtMRIMd2lyZS10cmFjZS0xGiQwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiJDAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMzI70KHQutC+0LvRjNC60L4g0YHRgtC+0LjRgiDQtNC+0YHRgtCw0LLQutCwINCyINCc0L7RgdC60LLRgz9ABw==",
+  "job": {
+    "schema_version": 1,
+    "event_type": "document.index",
+    "job_id": "00000000-0000-4000-8000-000000000010",
+    "operation_id": "00000000-0000-4000-8000-000000000011",
+    "account_id": "00000000-0000-4000-8000-000000000001",
+    "agent_id": "00000000-0000-4000-8000-000000000003",
+    "document_id": "00000000-0000-4000-8000-000000000012",
+    "document_version": 1,
+    "knowledge_revision": 7,
+    "request_id": "wire-request-1",
+    "trace_id": "wire-trace-1",
+    "attempt": 1
+  }
+}
