@@ -207,3 +207,92 @@ Retention replay и cleanup записей ещё не назначен. Отк�
 Строки агента с NUL и JSON с непарными UTF-16 surrogate escapes отклоняются
 с 400 до SQL. Корректные surrogate pairs, literal U+FFFD и исходный Unicode
 сохраняются без нормализации. DELETE проверяет фактическое пустое тело, включая chunked.
+
+### Примеры CRUD после входа
+
+Из любого каталога с curl сначала выполнить вход по [AUTH.md](AUTH.md#порядок-входа-и-проверка-запросами).
+Задать `API_BASE_URL` без завершающего `/`, `AUTH_ORIGIN` точным внешним origin,
+`COOKIE_FILE` абсолютным путём к сохранённому cookie jar и `CSRF_TOKEN` токеном
+из ответа успешного login/session. Cookie jar хранить вне Git. Примеры изменяют
+только специально созданного тестового агента. Ключи операций должны быть новыми
+для нового сценария; при проверке replay сохранять исходные ключ и payload.
+
+```sh
+curl --fail-with-body -i -b "$COOKIE_FILE" \
+  -H "Origin: $AUTH_ORIGIN" -H "X-CSRF-Token: $CSRF_TOKEN" \
+  -H 'Content-Type: application/json' -H 'Idempotency-Key: smoke-create-001' \
+  --data '{"name":"Проверочный агент","website":"","description":""}' \
+  "$API_BASE_URL/api/v1/agents"
+```
+
+Ожидается 201, JSON агента и ETag. Сохранить `AGENT_ID` из `id` и `AGENT_ETAG`
+из заголовка целиком, включая кавычки. Список и чтение:
+
+```sh
+curl --fail-with-body -i -b "$COOKIE_FILE" "$API_BASE_URL/api/v1/agents?limit=1"
+curl --fail-with-body -i -b "$COOKIE_FILE" "$API_BASE_URL/api/v1/agents/$AGENT_ID"
+```
+
+Ожидается 200. Для следующей страницы взять непустой next_cursor; при null
+страниц больше нет. Передавать cursor с URL-кодированием:
+
+```sh
+curl --fail-with-body -i -b "$COOKIE_FILE" --get \
+  --data-urlencode 'limit=1' --data-urlencode "cursor=$NEXT_CURSOR" \
+  "$API_BASE_URL/api/v1/agents"
+```
+
+Изменение и удаление:
+
+```sh
+curl --fail-with-body -i -b "$COOKIE_FILE" -X PATCH \
+  -H "Origin: $AUTH_ORIGIN" -H "X-CSRF-Token: $CSRF_TOKEN" \
+  -H 'Content-Type: application/json' -H 'Idempotency-Key: smoke-update-001' \
+  -H "If-Match: $AGENT_ETAG" \
+  --data '{"name":"Обновлённый агент","website":"","description":""}' \
+  "$API_BASE_URL/api/v1/agents/$AGENT_ID"
+curl --fail-with-body -i -b "$COOKIE_FILE" -X DELETE \
+  -H "Origin: $AUTH_ORIGIN" -H "X-CSRF-Token: $CSRF_TOKEN" \
+  -H 'Idempotency-Key: smoke-delete-001' \
+  "$API_BASE_URL/api/v1/agents/$AGENT_ID"
+```
+
+PATCH возвращает 200 и новую revision/ETag, DELETE — 202 с Job pending.
+GET удалённого ID с той же cookie возвращает 404; повтор DELETE с исходным
+ключом — исходный Job. Для проверки stale revision повторить PATCH до удаления
+с прежним ETag и новым ключом: ожидается 412. Ошибки возвращают JSON с error.code;
+400 — invalid_request, 401 — unauthorized, 403 — forbidden, 404 — not_found,
+409 — idempotency_conflict, 412 — revision_conflict, 500 — internal_error.
+
+### Ответы и ошибки CRUD
+
+JSON агента содержит `id`, `account_id`, `public_id`, `name`, `website`,
+`description`, `status`, `revision`, `knowledge_revision`,
+`active_knowledge_revision`, `config_revision`, `published_config_revision`
+и `public_sources_enabled`. ID и revision берутся из ответа; клиент не задаёт
+account_id или revision в теле. GET и POST/PATCH возвращают объект агента.
+Список возвращает `{"items":[],"next_cursor":null}` для пустой страницы;
+на непустой странице items содержит такие же объекты, next_cursor — строка
+для следующей страницы либо null.
+
+Пример успешного создания (UUID и public_id — синтетические):
+
+```json
+{"id":"11111111-1111-4111-8111-111111111111","account_id":"22222222-2222-4222-8222-222222222222","public_id":"EXAMPLE_PUBLIC_ID","name":"Проверочный агент","website":"","description":"","status":"draft","revision":1,"knowledge_revision":0,"active_knowledge_revision":0,"config_revision":1,"published_config_revision":0,"public_sources_enabled":false}
+```
+
+DELETE возвращает, например,
+`{"id":"33333333-3333-4333-8333-333333333333","status":"pending","error_code":null}`.
+ID здесь относится к заявке, а не к агенту. Ошибка имеет форму
+`{"error":{"code":"not_found","message":"Ресурс не найден"}}`.
+
+| HTTP | error.code | Причина |
+| --- | --- | --- |
+| 400 | invalid_request | JSON, поля, размеры, query, key или If-Match не соответствуют контракту |
+| 401 | unauthorized | Нет действующей авторизованной сессии или членства |
+| 403 | forbidden | Роль, Origin, CSRF или cross-site запрос запрещены |
+| 404 | not_found | Чужой/неизвестный UUID, public_id вместо UUID, новый доступ к tombstone |
+| 405 | method_not_allowed | Метод не поддерживается; Allow перечисляет разрешённые методы |
+| 409 | idempotency_conflict | Ключ использован с другим значимым payload |
+| 412 | revision_conflict | Новый PATCH использует устаревшую revision |
+| 500 | internal_error | Ошибка хранения, обязательного аудита или cleanup; транзакция откатывается |
