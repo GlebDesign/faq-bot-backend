@@ -213,20 +213,3 @@ def test_dimension_change_is_detected(setup, monkeypatch):
     with pytest.raises(AppError) as error:
         ask(setup)
     assert error.value.code == "stale_index"
-
-
-def test_quote_only_profile_preserves_source_numbers(setup):
-    ingest(setup)
-    service, store, scope, _ = setup
-    service.settings = service.settings.model_copy(update={"quote_only_answers": True})
-    def distorted_paraphrase(prompt):
-        source = json.loads(prompt.to_messages()[-1].content)["sources"][0]
-        return AnswerDraft(has_answer=True, claims=[Claim(
-            text="Доставка стоит 50 рублей.", chunk_id=source["chunk_id"], quote=source["text"]
-        )]), {}
-    service.backend.generator = RunnableLambda(distorted_paraphrase)
-    answer = ask(setup)
-    assert answer.has_answer
-    assert answer.answer == store.snapshot(scope)[1][0]["content"] + " [1]"
-    assert "500" in answer.answer
-    assert answer.sources[0].chunk_id == store.snapshot(scope)[1][0]["chunk_id"]

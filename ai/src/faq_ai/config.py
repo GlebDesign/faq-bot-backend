@@ -17,17 +17,6 @@ class Settings(StrictModel):
     top_k: int = Field(default=4, ge=1, le=10)
     min_score: float = Field(default=0.5, ge=0, le=1)
     context_chars: int = Field(default=6000, ge=1000, le=16000)
-    llm_context_tokens: int = Field(default=8192, ge=2048, le=32768)
-    llm_max_tokens: int = Field(default=1400, ge=128, le=4096)
-    model_threads: int | None = Field(default=None, ge=1, le=64)
-    model_keep_alive: int | None = Field(default=None, ge=0, le=3600)
-    llm_thinking: bool | None = None
-    llm_temperature: float = Field(default=0, ge=0, le=2)
-    llm_top_p: float | None = Field(default=None, gt=0, le=1)
-    llm_top_k: int | None = Field(default=None, ge=0, le=1000)
-    llm_repeat_penalty: float | None = Field(default=None, gt=0, le=2)
-    llm_seed: int | None = None
-    quote_only_answers: bool = False
 
     @model_validator(mode="after")
     def validate_limits(self):
@@ -46,13 +35,6 @@ class Settings(StrictModel):
             "timeout": "OLLAMA_TIMEOUT", "chunk_size": "CHUNK_SIZE",
             "chunk_overlap": "CHUNK_OVERLAP", "top_k": "TOP_K",
             "min_score": "MIN_SCORE", "context_chars": "CONTEXT_CHARS",
-            "llm_context_tokens": "LLM_CONTEXT_TOKENS", "llm_max_tokens": "LLM_MAX_TOKENS",
-            "model_threads": "MODEL_THREADS", "model_keep_alive": "MODEL_KEEP_ALIVE",
-            "llm_thinking": "LLM_THINKING",
-            "llm_temperature": "LLM_TEMPERATURE", "llm_top_p": "LLM_TOP_P",
-            "llm_top_k": "LLM_TOP_K", "llm_repeat_penalty": "LLM_REPEAT_PENALTY",
-            "llm_seed": "LLM_SEED",
-            "quote_only_answers": "QUOTE_ONLY_ANSWERS",
         }
         return cls(**{key: os.environ[env] for key, env in fields.items() if env in os.environ})
 

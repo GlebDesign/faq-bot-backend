@@ -11,9 +11,3 @@ _bmad-output
 **/*_test.go
 backend/bin
 backend/tmp
-**/.runtime/
-
-**/.venv/
-**/__pycache__/
-**/*.egg-info/
-ai/data/
