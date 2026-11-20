@@ -9,9 +9,9 @@ from langchain_core.exceptions import OutputParserException
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_ollama import ChatOllama, OllamaEmbeddings
-from pydantic import ValidationError
 
 from faq_ai.config import Settings
+from faq_ai.embeddings import BoundedEmbeddings
 from faq_ai.models import AnswerDraft, AppError, Claim
 
 
@@ -22,7 +22,6 @@ class Backend:
     embedding_key: str
     embeddings: Embeddings
     generator: Any
-
 
 
 EXTRACTIVE_PROMPT = """Ты FAQ-помощник компании. Выбери цитаты, отвечающие на вопрос.
@@ -73,7 +72,7 @@ def select_excerpts(chat, payload):
             or any(not isinstance(key, str) or key not in choices for key in ids)
             or len(set(ids)) != len(ids)):
         raise AppError('invalid_model_output', 'Модель вернула неизвестные или повторные цитаты.')
-    claims = [Claim(text=choices[key][1], chunk_id=choices[key][0], quote=choices[key][1]) for key in ids]
+    claims = [Claim(chunk_id=choices[key][0], quote=choices[key][1]) for key in ids]
     return AnswerDraft(has_answer=bool(claims), claims=claims), result['raw'].usage_metadata or {}
 
 
@@ -90,58 +89,24 @@ def ollama_backend(settings: Settings) -> Backend:
     )
     def generate(prompt):
         payload = json.loads(prompt.to_messages()[-1].content)
-        if settings.quote_only_answers:
-            try:
-                return select_excerpts(chat, payload)
-            except AppError:
-                raise
-            except OutputParserException as exc:
-                raise AppError("invalid_model_output", "Ответ модели не соответствует JSON-схеме.") from exc
-            except Exception as exc:
-                raise AppError("runtime_unavailable", "Ollama недоступен или запрос отклонён.") from exc
-        sources = payload["sources"]
-        schema = AnswerDraft.model_json_schema()
-        # Constrain citations to actual retrieved data, rather than asking a small model
-        # to freely copy long strings. RagService still validates source/quote pairing.
-        schema["$defs"]["Claim"]["properties"]["chunk_id"]["enum"] = [
-            source["chunk_id"] for source in sources
-        ]
-        quotes = set()
-        for source in sources:
-            text = source["text"]
-            pieces = [text, *re.split(r"(?<=[.!?])\s+|\n+", text)]
-            for piece in pieces:
-                piece = piece.strip()
-                if 8 <= len(piece) <= 800:
-                    quotes.add(piece)
-            if len(text) > 800:
-                quotes.update(text[start:start + 800] for start in range(0, len(text), 800)
-                              if len(text[start:start + 800]) >= 8)
-        if not quotes:
-            return AnswerDraft(has_answer=False, claims=[]), {}
-        schema["$defs"]["Claim"]["properties"]["quote"]["enum"] = sorted(quotes)
-        structured = chat.with_structured_output(schema, method="json_schema", include_raw=True)
         try:
-            result = structured.invoke(prompt)
+            return select_excerpts(chat, payload)
+        except AppError:
+            raise
         except OutputParserException as exc:
             raise AppError("invalid_model_output", "Ответ модели не соответствует JSON-схеме.") from exc
         except Exception as exc:
-            raise AppError("runtime_unavailable", "Ollama недоступен, модель не загружена или запрос отклонён.") from exc
-        if result.get("parsing_error") or result.get("parsed") is None:
-            raise AppError("invalid_model_output", "Модель вернула непроверяемую структуру ответа.")
-        try:
-            draft = AnswerDraft.model_validate(result["parsed"])
-        except ValidationError as exc:
-            raise AppError("invalid_model_output", "Ответ модели нарушает схему.") from exc
-        usage = result["raw"].usage_metadata or {}
-        return draft, usage
+            raise AppError("runtime_unavailable", "Ollama недоступен или запрос отклонён.") from exc
 
     return Backend(
         "ollama", settings.llm_model,
         f"ollama:{settings.ollama_base_url}:{settings.embedding_model}:{settings.embedding_revision}",
-        OllamaEmbeddings(model=settings.embedding_model, base_url=settings.ollama_base_url,
-                         num_thread=settings.model_threads, keep_alive=settings.model_keep_alive,
-                         client_kwargs={"timeout": settings.timeout}),
+        BoundedEmbeddings(
+            OllamaEmbeddings(model=settings.embedding_model, base_url=settings.ollama_base_url,
+                             num_thread=settings.model_threads, keep_alive=settings.model_keep_alive,
+                             client_kwargs={"timeout": settings.timeout}),
+            dimension=settings.embedding_dimension, batch=settings.embedding_batch_size,
+            concurrency=settings.model_concurrency, timeout=settings.timeout),
         RunnableLambda(generate),
     )
 
@@ -183,7 +148,7 @@ def demo_backend() -> Backend:
         if not candidates:
             return AnswerDraft(has_answer=False, claims=[]), {}
         _, chunk_id, line = max(candidates, key=lambda item: item[0])
-        return AnswerDraft(has_answer=True, claims=[Claim(text=line, chunk_id=chunk_id, quote=line)]), {}
+        return AnswerDraft(has_answer=True, claims=[Claim(chunk_id=chunk_id, quote=line)]), {}
 
     return Backend("demo-extractive", "none:deterministic-extraction", "demo-token-hash-v1",
                    DemoEmbeddings(), RunnableLambda(extract))

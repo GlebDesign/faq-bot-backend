@@ -27,15 +27,19 @@ class Settings(StrictModel):
     llm_top_k: int | None = Field(default=None, ge=0, le=1000)
     llm_repeat_penalty: float | None = Field(default=None, gt=0, le=2)
     llm_seed: int | None = None
-    quote_only_answers: bool = False
+    embedding_dimension: int | None = Field(default=None, ge=1, le=8192)
+    embedding_batch_size: int = Field(default=16, ge=1, le=128)
+    model_concurrency: int = Field(default=1, ge=1, le=16)
 
     @model_validator(mode="after")
     def validate_limits(self):
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE")
         url = urlparse(self.ollama_base_url)
-        if url.scheme not in {"http", "https"} or not url.hostname or url.username or url.password:
-            raise ValueError("OLLAMA_BASE_URL must be an HTTP(S) URL without credentials")
+        if url.scheme not in {"http", "https"} or not url.hostname or url.username or url.password or url.query or url.fragment:
+            raise ValueError("OLLAMA_BASE_URL must be an HTTP(S) URL without credentials, query or fragment")
+        if url.port is not None and not 1 <= url.port <= 65535:
+            raise ValueError("OLLAMA_BASE_URL port is out of range")
         return self
 
     @classmethod
@@ -52,7 +56,9 @@ class Settings(StrictModel):
             "llm_temperature": "LLM_TEMPERATURE", "llm_top_p": "LLM_TOP_P",
             "llm_top_k": "LLM_TOP_K", "llm_repeat_penalty": "LLM_REPEAT_PENALTY",
             "llm_seed": "LLM_SEED",
-            "quote_only_answers": "QUOTE_ONLY_ANSWERS",
+            "embedding_dimension": "EMBEDDING_DIMENSION",
+            "embedding_batch_size": "EMBEDDING_BATCH_SIZE",
+            "model_concurrency": "MODEL_CONCURRENCY",
         }
         return cls(**{key: os.environ[env] for key, env in fields.items() if env in os.environ})
 

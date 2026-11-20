@@ -10,9 +10,8 @@ from faq_ai.rag import RagService
 from faq_ai.store import Store
 
 
-@pytest.mark.parametrize("quote_only", [False, True])
 @pytest.mark.parametrize("response_kind", ["valid", "missing", "invalid_json", "unavailable"])
-def test_real_langchain_adapters_with_mocked_ollama_http(tmp_path, monkeypatch, response_kind, quote_only):
+def test_real_langchain_adapters_with_mocked_ollama_http(tmp_path, monkeypatch, response_kind):
     """Real ChatOllama/OllamaEmbeddings; HTTP fixtures, not model-quality evidence."""
     calls = []
     def send(client, request, **kwargs):
@@ -40,20 +39,11 @@ def test_real_langchain_adapters_with_mocked_ollama_http(tmp_path, monkeypatch, 
         if response_kind == "unavailable":
             raise httpx.ConnectError("offline", request=request)
         payload = json.loads(body["messages"][-1]["content"])
-        if quote_only:
-            excerpt = payload["excerpts"][0]
-            assert excerpt["chunk_id"] == "S1"
-            assert excerpt["quote"] == "Доставка в Москву стоит 500 рублей."
-            assert body["format"]["properties"]["citation_ids"]["items"]["enum"] == ["Q1"]
-            draft = {"citation_ids": [] if response_kind == "missing" else [excerpt["quote_id"]]}
-        else:
-            source = payload["sources"][0]
-            assert body["format"]["$defs"]["Claim"]["properties"]["chunk_id"]["enum"] == ["S1"]
-            assert source["text"] in body["format"]["$defs"]["Claim"]["properties"]["quote"]["enum"]
-            draft = {"has_answer": response_kind != "missing", "claims": []}
-            if draft["has_answer"]:
-                draft["claims"] = [{"text": "Доставка стоит 500 рублей.", "chunk_id": source["chunk_id"],
-                                    "quote": "Доставка в Москву стоит 500 рублей."}]
+        excerpt = payload["excerpts"][0]
+        assert excerpt["chunk_id"] == "S1"
+        assert excerpt["quote"] == "Доставка в Москву стоит 500 рублей."
+        assert body["format"]["properties"]["citation_ids"]["items"]["enum"] == ["Q1"]
+        draft = {"citation_ids": [] if response_kind == "missing" else [excerpt["quote_id"]]}
         content = "not json" if response_kind == "invalid_json" else json.dumps(draft, ensure_ascii=False)
         event = {"model": "test-generation", "message": {"role": "assistant", "content": content},
                  "done": True, "done_reason": "stop", "prompt_eval_count": 100, "eval_count": 20}
@@ -69,7 +59,7 @@ def test_real_langchain_adapters_with_mocked_ollama_http(tmp_path, monkeypatch, 
         "LLM_REPEAT_PENALTY": "1.1", "LLM_SEED": "42",
     }.items():
         monkeypatch.setenv(key, value)
-    settings = Settings.from_env().model_copy(update={"quote_only_answers": quote_only})
+    settings = Settings.from_env()
     store = Store(tmp_path / "index.sqlite3")
     try:
         service = RagService(store, ollama_backend(settings), settings)

@@ -1,4 +1,3 @@
-import hashlib
 import io
 import subprocess
 import zipfile
@@ -7,8 +6,7 @@ import pytest
 from pypdf import PdfWriter
 from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
-from faq_ai.jobs import JobError
-from faq_ai.parsers import Section, chunks_for, parse_bytes, parse_isolated, read_source
+from faq_ai.parsers import Section, chunks_for, parse_bytes, parse_isolated, ParseError
 
 
 def docx(body, **kwargs):
@@ -53,7 +51,7 @@ def test_russian_markdown_and_manual_text_keep_headings_and_offsets():
     ('exe', b'anything', 'unsupported_format'),
 ])
 def test_typed_parse_failures(kind, raw, code):
-    with pytest.raises(JobError) as error:
+    with pytest.raises(ParseError) as error:
         parse_bytes(raw, kind)
     assert error.value.code == code
 
@@ -73,13 +71,13 @@ def test_docx_tables_headings_and_no_external_relationships():
 
 
 def test_docx_zip_bomb_and_entity_expansion_are_rejected():
-    with pytest.raises(JobError) as error:
+    with pytest.raises(ParseError) as error:
         parse_bytes(docx('<w:p/>', bomb='A' * 100000), 'docx')
     assert error.value.code == 'unsafe_docx_archive'
     stream = io.BytesIO()
     with zipfile.ZipFile(stream, 'w') as archive:
         archive.writestr('word/document.xml', '<!DOCTYPE x [<!ENTITY z SYSTEM "file:///secret">]><x>&z;</x>')
-    with pytest.raises(JobError) as error:
+    with pytest.raises(ParseError) as error:
         parse_bytes(stream.getvalue(), 'docx')
     assert error.value.code == 'corrupt_docx'
 
@@ -95,30 +93,11 @@ def test_chunk_ids_stable_versioned_and_real_offsets():
         assert len(chunk['content']) <= 160 and chunk['page'] == 3
 
 
-@pytest.mark.parametrize('key', ['../outside', '/absolute', 'C:/secret', 'a\\b', 'https://evil/file'])
-def test_source_stays_inside_trusted_root(tmp_path, key):
-    with pytest.raises(JobError) as error:
-        read_source(tmp_path, key, '0' * 64)
-    assert error.value.code == 'invalid_storage_key'
-
-
-def test_source_hash_and_size_checked(tmp_path):
-    raw = 'Русский текст'.encode()
-    (tmp_path/'a.txt').write_bytes(raw)
-    assert read_source(tmp_path, 'a.txt', hashlib.sha256(raw).hexdigest()) == raw
-    with pytest.raises(JobError) as error:
-        read_source(tmp_path, 'a.txt', '0' * 64)
-    assert error.value.code == 'source_hash_mismatch'
-    with pytest.raises(JobError) as error:
-        read_source(tmp_path, 'a.txt', hashlib.sha256(raw).hexdigest(), 3)
-    assert error.value.code == 'file_size_limit'
-
-
 def test_parser_process_timeout_is_typed(monkeypatch):
     def stalled(*args, **kwargs):
         raise subprocess.TimeoutExpired('parser', 1)
     monkeypatch.setattr(subprocess, 'run', stalled)
-    with pytest.raises(JobError) as error:
+    with pytest.raises(ParseError) as error:
         parse_isolated(b'file', 'pdf', 1)
     assert error.value.code == 'parse_timeout'
 

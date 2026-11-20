@@ -7,12 +7,16 @@ import subprocess
 import sys
 import zipfile
 from dataclasses import asdict, dataclass
-from pathlib import Path
 
 from defusedxml import ElementTree
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from faq_ai.jobs import JobError
+from faq_ai.models import AppError
+
+
+class ParseError(AppError):
+    def __init__(self, code):
+        super().__init__(code, "Ошибка обработки документа: " + code)
 
 
 @dataclass
@@ -29,14 +33,14 @@ def normalize(text):
 
 def parse_bytes(raw: bytes, kind: str) -> list[Section]:
     if not raw or len(raw) > 10_000_000:
-        raise JobError("file_size_limit" if raw else "empty_document")
+        raise ParseError("file_size_limit" if raw else "empty_document")
     if kind in {"txt", "md", "text"}:
         try:
             text = normalize(raw.decode("utf-8-sig"))
         except UnicodeDecodeError as exc:
-            raise JobError("invalid_encoding") from exc
+            raise ParseError("invalid_encoding") from exc
         if "\x00" in text:
-            raise JobError("invalid_document")
+            raise ParseError("invalid_document")
         sections, heading, offset = [], "", 0
         for paragraph in re.split(r"(\n\s*\n)", text):
             if paragraph.strip():
@@ -56,28 +60,28 @@ def parse_bytes(raw: bytes, kind: str) -> list[Section]:
                     stream_decoding_work_maximum_length=20_000_000, jbig2dec_binary=None):
                 reader = PdfReader(io.BytesIO(raw), strict=True)
                 if reader.is_encrypted:
-                    raise JobError("encrypted_pdf")
+                    raise ParseError("encrypted_pdf")
                 if len(reader.pages) > 200:
-                    raise JobError("page_limit")
+                    raise ParseError("page_limit")
                 sections = []
                 for i, page in enumerate(reader.pages, 1):
                     # Bound decompressed page streams before extract_text allocates its parse tree.
                     stream = page.get_contents()
                     if stream and len(stream.get_data()) > 10_000_000:
-                        raise JobError("pdf_stream_limit")
+                        raise ParseError("pdf_stream_limit")
                     text = normalize(page.extract_text() or "")
                     if text.strip():
                         sections.append(Section(text, page=i))
                     if sum(len(s.text) for s in sections) > 2_000_000:
-                        raise JobError("text_limit")
-        except JobError:
+                        raise ParseError("text_limit")
+        except ParseError:
             raise
         except LimitReachedError as exc:
-            raise JobError("pdf_resource_limit") from exc
+            raise ParseError("pdf_resource_limit") from exc
         except Exception as exc:
-            raise JobError("corrupt_pdf") from exc
+            raise ParseError("corrupt_pdf") from exc
         if not sections:
-            raise JobError("scanned_or_empty_pdf")
+            raise ParseError("scanned_or_empty_pdf")
     elif kind == "docx":
         try:
             with zipfile.ZipFile(io.BytesIO(raw)) as archive:
@@ -85,9 +89,9 @@ def parse_bytes(raw: bytes, kind: str) -> list[Section]:
                 if (len(entries) > 1000 or sum(e.file_size for e in entries) > 25_000_000
                         or any(e.flag_bits & 1 or e.file_size > 10_000_000
                                or e.file_size > max(e.compress_size, 1) * 100 for e in entries)):
-                    raise JobError("unsafe_docx_archive")
+                    raise ParseError("unsafe_docx_archive")
                 if "word/vbaProject.bin" in archive.namelist():
-                    raise JobError("unsupported_macros")
+                    raise ParseError("unsupported_macros")
                 body = ElementTree.fromstring(archive.read("word/document.xml"))
             ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
             sections, heading, offset = [], "", 0
@@ -100,17 +104,17 @@ def parse_bytes(raw: bytes, kind: str) -> list[Section]:
                 if text.strip():
                     sections.append(Section(text, heading=heading, offset=offset))
                     offset += len(text) + 1
-        except JobError:
+        except ParseError:
             raise
         except Exception as exc:
-            raise JobError("corrupt_docx") from exc
+            raise ParseError("corrupt_docx") from exc
     else:
-        raise JobError("unsupported_format")
+        raise ParseError("unsupported_format")
     sections = [s for s in sections if s.text.strip()]
     if not sections:
-        raise JobError("empty_document")
+        raise ParseError("empty_document")
     if sum(len(s.text) for s in sections) > 2_000_000:
-        raise JobError("text_limit")
+        raise ParseError("text_limit")
     return sections
 
 
@@ -119,16 +123,16 @@ def parse_isolated(raw, kind, timeout=20):
         process = subprocess.run([sys.executable, "-m", "faq_ai.parsers", kind], input=raw,
                                  stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=timeout)
     except OSError as exc:
-        raise JobError("parser_unavailable", transient=True) from exc
+        raise ParseError("parser_unavailable") from exc
     except subprocess.TimeoutExpired as exc:
-        raise JobError("parse_timeout") from exc
+        raise ParseError("parse_timeout") from exc
     try:
         result = json.loads(process.stdout)
         if process.returncode or "error" in result:
-            raise JobError(result.get("error", "parse_failed"))
+            raise ParseError(result.get("error", "parse_failed"))
         return [Section(**s) for s in result["sections"]]
     except (ValueError, KeyError, TypeError) as exc:
-        raise JobError("parse_failed") from exc
+        raise ParseError("parse_failed") from exc
 
 
 def chunks_for(sections, document_id, version, chunk_size=800, overlap=120):
@@ -143,29 +147,10 @@ def chunks_for(sections, document_id, version, chunk_size=800, overlap=120):
                            "page": section.page, "heading": section.heading,
                            "start_char": section.offset + part.metadata["start_index"]})
             if len(result) > 1000:
-                raise JobError("chunk_limit")
+                raise ParseError("chunk_limit")
     if not result:
-        raise JobError("empty_document")
+        raise ParseError("empty_document")
     return result
-
-
-def read_source(root: Path, key: str, expected_hash: str, max_bytes=10_000_000):
-    # Metadata key is resolved under an allowlisted, read-only mount; never a URL.
-    if not key or "\\" in key or ":" in key or Path(key).is_absolute() or ".." in Path(key).parts:
-        raise JobError("invalid_storage_key")
-    path = (root.resolve() / key).resolve()
-    if not path.is_relative_to(root.resolve()):
-        raise JobError("invalid_storage_key")
-    try:
-        with path.open("rb") as file:
-            raw = file.read(max_bytes + 1)
-    except OSError as exc:
-        raise JobError("source_unavailable", transient=True) from exc
-    if len(raw) > max_bytes:
-        raise JobError("file_size_limit")
-    if hashlib.sha256(raw).hexdigest() != expected_hash:
-        raise JobError("source_hash_mismatch")
-    return raw
 
 
 if __name__ == "__main__":
@@ -178,6 +163,6 @@ if __name__ == "__main__":
         data = sys.stdin.buffer.read(10_000_001)
         sections = parse_bytes(data, sys.argv[1])
         sys.stdout.buffer.write(json.dumps({"sections": [asdict(s) for s in sections]}, ensure_ascii=False).encode())
-    except JobError as error:
+    except ParseError as error:
         sys.stdout.buffer.write(json.dumps({"error": error.code}).encode())
         sys.exit(2)

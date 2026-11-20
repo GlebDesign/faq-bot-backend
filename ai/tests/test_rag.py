@@ -124,7 +124,7 @@ def test_embedding_configuration_change_requires_reindex(setup):
     assert error.value.code == "stale_index"
 
 
-@pytest.mark.parametrize("vector", [[], [0, 0], [float("nan"), 1], [float("inf"), 0]])
+@pytest.mark.parametrize("vector", [[], [0, 0], [float("nan"), 1], [float("inf"), 0], [True, 1]])
 def test_invalid_vectors_never_replace_documents(setup, monkeypatch, vector):
     service, store, scope, _ = setup
     monkeypatch.setattr(service.backend.embeddings, "embed_documents", lambda texts: [vector for _ in texts])
@@ -140,8 +140,7 @@ def test_fabricated_sources_are_rejected(setup, tamper):
     service, _, _, _ = setup
     def generate(prompt):
         source = json.loads(prompt.to_messages()[-1].content)["sources"][0]
-        claim = Claim(text="Доставка стоит 500 рублей.",
-                      chunk_id="forged" if tamper == "id" else source["chunk_id"],
+        claim = Claim(chunk_id="forged" if tamper == "id" else source["chunk_id"],
                       quote="Несуществующая цитата" if tamper == "quote" else source["text"])
         return AnswerDraft(has_answer=True, claims=[claim]), {}
     service.backend.generator = RunnableLambda(generate)
@@ -215,18 +214,15 @@ def test_dimension_change_is_detected(setup, monkeypatch):
     assert error.value.code == "stale_index"
 
 
-def test_quote_only_profile_preserves_source_numbers(setup):
-    ingest(setup)
-    service, store, scope, _ = setup
-    service.settings = service.settings.model_copy(update={"quote_only_answers": True})
-    def distorted_paraphrase(prompt):
-        source = json.loads(prompt.to_messages()[-1].content)["sources"][0]
-        return AnswerDraft(has_answer=True, claims=[Claim(
-            text="Доставка стоит 50 рублей.", chunk_id=source["chunk_id"], quote=source["text"]
-        )]), {}
-    service.backend.generator = RunnableLambda(distorted_paraphrase)
-    answer = ask(setup)
-    assert answer.has_answer
-    assert answer.answer == store.snapshot(scope)[1][0]["content"] + " [1]"
-    assert "500" in answer.answer
-    assert answer.sources[0].chunk_id == store.snapshot(scope)[1][0]["chunk_id"]
+@pytest.mark.parametrize("url", ["http://127.0.0.1:11434?token=secret", "http://127.0.0.1:11434#secret", "http://127.0.0.1:invalid"])
+def test_runtime_url_rejects_query_fragment_or_invalid_port(url):
+    with pytest.raises(ValueError):
+        Settings(ollama_base_url=url)
+
+
+@pytest.mark.parametrize("payload", [[], {"models": [None]}, {"models": [{"name": 7}]}])
+def test_doctor_handles_malformed_model_inventory(monkeypatch, payload):
+    from io import BytesIO
+    monkeypatch.setattr(cli, "urlopen", lambda *args, **kwargs: BytesIO(json.dumps(payload).encode()))
+    report = cli.doctor(Settings(llm_model="llm", embedding_model="embedding"))
+    assert not report["ready"] and "error" in report

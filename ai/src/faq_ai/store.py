@@ -7,7 +7,7 @@ from faq_ai.models import AppError, Scope
 
 
 def unit_vector(values: list[float]) -> list[float]:
-    if not values or not all(isinstance(x, (int, float)) and math.isfinite(x) for x in values):
+    if not values or not all(type(x) in (int, float) and math.isfinite(x) for x in values):
         raise AppError("invalid_embedding", "Модель вернула некорректный вектор.")
     norm = math.sqrt(sum(x * x for x in values))
     if not math.isfinite(norm) or norm == 0:

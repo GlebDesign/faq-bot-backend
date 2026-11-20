@@ -19,7 +19,6 @@ class Scope(StrictModel):
 
 
 class Claim(StrictModel):
-    text: str = Field(min_length=1, max_length=1200)
     chunk_id: str = Field(min_length=1, max_length=128)
     quote: str = Field(min_length=8, max_length=800)
 
@@ -53,7 +52,7 @@ class Answer(StrictModel):
     backend: str
     generation_model: str
     embedding_model: str
-    prompt_version: str = "faq-rag-v1"
+    prompt_version: str = "faq-extractive-v1"
     usage_available: bool = False
     input_tokens: int | None = None
     output_tokens: int | None = None

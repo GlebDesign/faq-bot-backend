@@ -29,8 +29,12 @@ def doctor(settings: Settings) -> dict:
     try:
         with urlopen(settings.ollama_base_url.rstrip("/") + "/api/tags", timeout=min(settings.timeout, 5)) as response:
             data = json.load(response)
+        if (not isinstance(data, dict) or not isinstance(data.get("models"), list)
+                or any(not isinstance(model, dict) or not isinstance(model.get("name"), str)
+                       for model in data["models"])):
+            raise ValueError("invalid model inventory")
         report["ollama_reachable"] = True
-        report["models"] = [m["name"] for m in data.get("models", [])]
+        report["models"] = [model["name"] for model in data["models"]]
         report["configured_models_present"] = {
             "generation": bool(settings.llm_model) and settings.llm_model in report["models"],
             "embedding": bool(settings.embedding_model) and settings.embedding_model in report["models"],
