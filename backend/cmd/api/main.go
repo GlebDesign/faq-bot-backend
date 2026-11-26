@@ -62,14 +62,16 @@ func run(logger *slog.Logger) (err error) {
 	}
 	var auth *handlers.AuthHandler
 	var agents *handlers.AgentHandler
+	var chat *handlers.ChatHandler
 	if cfg.AuthEnabled {
 		authService := service.New(repository.NewAuth(pool), authprovider.NewSupabase(cfg.SupabaseURL, cfg.SupabaseKey))
 		auth = handlers.NewAuthHandler(authService, cfg.AuthOrigin, cfg.AuthAllowInsecureHTTP)
 		agentStore := repository.NewAgents(pool)
 		agents = handlers.NewAgentHandler(authService, service.NewAgents(pool, agentStore, service.NewAudit(repository.NewAudit()), agentStore, cfg.AgentCursorKey), cfg.AuthOrigin)
+		chat = handlers.NewChatHandler(authService, service.NewChat(pool, repository.NewChat(pool), cfg.AgentCursorKey), cfg.AuthOrigin)
 	}
 	server := &http.Server{
-		Handler:           handlers.NewHandler(health, auth, agents),
+		Handler:           handlers.NewHandler(health, auth, agents, chat),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,

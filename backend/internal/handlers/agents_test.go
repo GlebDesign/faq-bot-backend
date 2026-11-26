@@ -97,18 +97,27 @@ func newAgentFixture(t *testing.T) *agentFixture {
 	}
 	f := &agentFixture{pool: pool, auth: service.New(repository.NewAuth(pool), agentProvider{}), store: repository.NewAgents(pool), audit: service.NewAudit(repository.NewAudit())}
 	f.agents = service.NewAgents(pool, f.store, f.audit, f.store, agentCursorKey)
-	f.server = httptest.NewServer(NewHandler(&Health{}, NewAuthHandler(f.auth, agentOrigin, true), NewAgentHandler(f.auth, f.agents, agentOrigin)))
+	chat := NewChatHandler(f.auth, service.NewChat(pool, repository.NewChat(pool), agentCursorKey), agentOrigin)
+	f.server = httptest.NewServer(NewHandler(&Health{}, NewAuthHandler(f.auth, agentOrigin, true), NewAgentHandler(f.auth, f.agents, agentOrigin), chat))
 	t.Cleanup(f.server.Close)
 	return f
 }
 
 func (f *agentFixture) request(t *testing.T, c agentClient, method, path, body, key, revision string, headers map[string]string) agentResponse {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	response, err := f.doRequest(t.Context(), c, method, path, body, key, revision, headers)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return response
+}
+
+func (f *agentFixture) doRequest(ctx context.Context, c agentClient, method, path, body, key, revision string, headers map[string]string) (agentResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, method, f.server.URL+path, strings.NewReader(body))
 	if err != nil {
-		t.Fatal(err)
+		return agentResponse{}, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Origin", agentOrigin)
@@ -127,17 +136,17 @@ func (f *agentFixture) request(t *testing.T, c agentClient, method, path, body, 
 	}
 	response, err := f.server.Client().Do(req)
 	if err != nil {
-		t.Fatal(err)
+		return agentResponse{}, err
 	}
 	defer func() { _ = response.Body.Close() }()
 	raw, err := io.ReadAll(response.Body)
 	if err != nil {
-		t.Fatal(err)
+		return agentResponse{}, err
 	}
 	if response.Header.Get("Cache-Control") != "no-store" || response.Header.Get("X-Request-ID") == "" {
-		t.Fatal("standard headers missing")
+		return agentResponse{}, errors.New("standard headers missing")
 	}
-	return agentResponse{response.StatusCode, raw, response.Header}
+	return agentResponse{response.StatusCode, raw, response.Header}, nil
 }
 func expectAgentStatus(t *testing.T, r agentResponse, status int) {
 	t.Helper()

@@ -13,9 +13,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"faqbot/backend/internal/db"
 	"faqbot/backend/internal/models"
 	"faqbot/backend/internal/repository"
+	"faqbot/backend/internal/service"
 )
 
 func chatID(n int) string { return fmt.Sprintf("00000000-0000-4000-8000-%012d", n) }
@@ -26,7 +29,7 @@ func chatDatabase(t *testing.T) *sql.DB {
 	if err := Apply(context.Background(), dsn, "../../migrations"); err != nil {
 		t.Fatal(err)
 	}
-	schemaVersion(t, pool, 6)
+	schemaVersion(t, pool, 7)
 	for _, n := range []int{1, 2} {
 		if _, err := pool.Exec("INSERT INTO accounts(id) VALUES ($1)", chatID(n)); err != nil {
 			t.Fatal(db.WrapError("create chat account", err))
@@ -436,5 +439,118 @@ func TestChatSQLAndRepositoryNonblankMessage(t *testing.T) {
 	in.Message = "Вопрос с пробелом"
 	if _, err := repository.NewAIRequests(pool).CreateOrRead(t.Context(), in); !errors.Is(err, repository.ErrAIRequestConflict) {
 		t.Fatal("payload normalization hid a different message")
+	}
+}
+
+func TestAIRequestSQLRejectsInvalidInputBeforeTransaction(t *testing.T) {
+	repo := repository.NewAIRequests(nil)
+	for _, in := range []models.AIRequestInput{
+		{Message: "Question"},
+		{VisitorID: "visitor", MemberID: chatID(3), Message: "Question"},
+		{MemberID: chatID(3), Message: "\u00a0"},
+	} {
+		if _, err := repo.CreateOrRead(t.Context(), in); !errors.Is(err, repository.ErrInvalidAIRequest) {
+			t.Fatalf("expected invalid input before transaction: %v", err)
+		}
+	}
+}
+
+func TestChatSQLWriteScopeLocksRestrictedRole(t *testing.T) {
+	role := os.Getenv("TEST_AUDIT_ROLE")
+	if role == "" {
+		t.Skip("set TEST_AUDIT_ROLE for restricted chat writer")
+	}
+	pool := chatDatabase(t)
+	ctx, cancel := context.WithTimeout(t.Context(), 15*time.Second)
+	defer cancel()
+	var schema string
+	if err := pool.QueryRowContext(ctx, "SELECT current_schema()").Scan(&schema); err != nil {
+		t.Fatal(db.WrapError("read chat schema", err))
+	}
+	roleSQL := pgx.Identifier{role}.Sanitize()
+	for _, grant := range []string{
+		"GRANT USAGE ON SCHEMA " + pgx.Identifier{schema}.Sanitize(),
+		"GRANT SELECT, UPDATE ON agents",
+		"GRANT SELECT ON account_members",
+		"GRANT SELECT, INSERT ON conversations, messages, ai_requests",
+		"GRANT EXECUTE ON FUNCTION lock_chat_write(uuid,uuid,uuid,uuid)",
+	} {
+		if _, err := pool.ExecContext(ctx, grant+" TO "+roleSQL); err != nil {
+			t.Fatal(db.WrapError("grant restricted chat writer", err))
+		}
+	}
+	chat := repository.NewChat(pool)
+	in := models.AIRequestInput{
+		ID: chatID(40), AccountID: chatID(1), AgentID: chatID(6), MemberID: chatID(3),
+		Operation: "test_message", IdempotencyKey: "first", ConversationID: chatID(14), MessageID: chatID(41), Message: "First question",
+	}
+	next := in
+	next.ID, next.IdempotencyKey, next.MessageID = chatID(42), "second", chatID(43)
+	first, err := pool.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(db.WrapError("begin restricted chat write", err))
+	}
+	defer func() { _ = first.Rollback() }()
+	if _, err := first.ExecContext(ctx, "SET LOCAL ROLE "+roleSQL); err != nil {
+		t.Fatal(db.WrapError("set chat writer role", err))
+	}
+	var hasUpdate bool
+	if err := first.QueryRowContext(ctx, `SELECT has_table_privilege(current_user,'account_members','UPDATE')
+		OR has_table_privilege(current_user,'conversations','UPDATE')`).Scan(&hasUpdate); err != nil || hasUpdate {
+		t.Fatal("chat writer must not have UPDATE membership or conversation", err)
+	}
+	if _, err := chat.AcceptMessage(ctx, first, in); err != nil {
+		t.Fatal(err)
+	}
+	for _, mutation := range []struct{ query, id string }{
+		{"DELETE FROM account_members WHERE account_id=$1 AND user_id=$2", in.MemberID},
+		{"UPDATE agents SET status='deleted',deleted_at=now(),revision=revision+1 WHERE account_id=$1 AND id=$2", in.AgentID},
+	} {
+		err := db.WithTx(ctx, pool, func(ctx context.Context, tx *sql.Tx) error {
+			if _, err := tx.ExecContext(ctx, "SET LOCAL lock_timeout='100ms'"); err != nil {
+				return db.WrapError("set chat mutation lock timeout", err)
+			}
+			_, err := tx.ExecContext(ctx, mutation.query, in.AccountID, mutation.id)
+			return db.WrapError("try concurrent chat scope mutation", err)
+		})
+		sqlState(t, err, "55P03")
+	}
+	writeAsRole := func() error {
+		return db.WithTx(ctx, pool, func(ctx context.Context, tx *sql.Tx) error {
+			if _, err := tx.ExecContext(ctx, "SET LOCAL ROLE "+roleSQL); err != nil {
+				return db.WrapError("set restricted chat role", err)
+			}
+			if _, err := tx.ExecContext(ctx, "SET LOCAL lock_timeout='100ms'"); err != nil {
+				return db.WrapError("set chat write lock timeout", err)
+			}
+			_, err := chat.AcceptMessage(ctx, tx, next)
+			return err
+		})
+	}
+	sqlState(t, writeAsRole(), "55P03")
+	if err := first.Commit(); err != nil {
+		t.Fatal(db.WrapError("commit scoped chat write", err))
+	}
+	if err := writeAsRole(); err != nil {
+		t.Fatal(err)
+	}
+	var firstAt, secondAt time.Time
+	if err := pool.QueryRowContext(ctx, `SELECT a.created_at,b.created_at FROM messages a,messages b WHERE a.id=$1 AND b.id=$2`, in.MessageID, next.MessageID).Scan(&firstAt, &secondAt); err != nil || !secondAt.After(firstAt) {
+		t.Fatal("messages did not follow serialized acceptance order", err)
+	}
+	if _, err := pool.ExecContext(ctx, "DELETE FROM account_members WHERE account_id=$1 AND user_id=$2", in.AccountID, in.MemberID); err != nil {
+		t.Fatal(db.WrapError("revoke chat membership", err))
+	}
+	if err := writeAsRole(); !errors.Is(err, service.ErrChatNotFound) {
+		t.Fatalf("revoked member replay: %v", err)
+	}
+	if _, err := pool.ExecContext(ctx, "INSERT INTO account_members(account_id,user_id,role) VALUES ($1,$2,'owner')", in.AccountID, in.MemberID); err != nil {
+		t.Fatal(db.WrapError("restore chat membership", err))
+	}
+	if _, err := pool.ExecContext(ctx, "UPDATE agents SET status='deleted',deleted_at=now(),revision=revision+1 WHERE account_id=$1 AND id=$2", in.AccountID, in.AgentID); err != nil {
+		t.Fatal(db.WrapError("delete chat agent", err))
+	}
+	if err := writeAsRole(); !errors.Is(err, service.ErrChatNotFound) {
+		t.Fatalf("deleted agent replay: %v", err)
 	}
 }

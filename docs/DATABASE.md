@@ -42,7 +42,7 @@ psql "$DATABASE_URL" -c 'SELECT 1;'
 psql "$DATABASE_URL" -c 'SELECT version, dirty FROM schema_migrations;'
 ```
 
-После применения всех миграций ожидается `version=6`, `dirty=false`.
+После применения всех миграций ожидается `version=7`, `dirty=false`.
 Для production следует разделить роли: migrator меняет схему, API выполняет
 только нужные запросы к данным. Автоматического создания ролей в проекте нет.
 Роли API достаточно `CONNECT` к БД, `USAGE` схемы, `SELECT, INSERT` для `users`,
@@ -55,6 +55,18 @@ UPDATE/DELETE/TRUNCATE запрещены. Прав на изменение сх
 CRUD агентов также требует `SELECT, INSERT, UPDATE` для `agents` и
 `agent_operations`, `INSERT` для `agent_cleanup_requests`. Удаление строк
 этих таблиц API не требуется: DELETE агента сохраняет tombstone.
+Кабинетному чату нужны `SELECT, INSERT` для `conversations`, `messages`
+и `ai_requests`. Для защиты от одновременного удаления агента транзакция
+записи берёт `FOR SHARE` на строке `agents` с уже выданным правом UPDATE.
+Роли API также нужно EXECUTE функции `lock_chat_write`. Функция фиксирует
+членство через `FOR SHARE` до завершения транзакции. Конкурентный отзыв
+членства либо завершится первым и запись будет отклонена, либо дождётся commit
+или rollback начавшейся записи. При приёме сообщения функция берёт
+`FOR NO KEY UPDATE` на собственном диалоге, поэтому новые записи в одном
+диалоге идут последовательно. Время сообщения задаётся SQL после получения
+этой блокировки, порядок истории остаётся `created_at DESC, id DESC`.
+SQL-выражение функции связывается с таблицами схемы на этапе миграции.
+У PUBLIC нет EXECUTE, роли API не нужны права UPDATE на членство и диалоги.
 UUID создаёт Go, последовательности и расширения PostgreSQL миграция не использует.
 Готовый SQL и проверка прав находятся в [инструкции наката миграций](MIGRATIONS.md).
 В ней используется схема `public`: мигратор и API должны видеть одни таблицы
@@ -70,7 +82,7 @@ UUID создаёт Go, последовательности и расширен
 | `sessions` | SHA-256 хеш токена, CSRF, user/account, сроки absolute/idle, отзыв |
 | `audit_events` | Внутренний журнал с серверным ключом, scope, actor, объектом, исходом и безопасными metadata |
 | `agents` | Account FK, уникальный public ID, name/website/description, статусы, revisions и tombstone |
-| `conversations` | Account+agent и ровно один visitor/member; member связан с account_members |
+| `conversations` | Account+agent и ровно один visitor/member; для кабинетного создания хранится хеш ключа |
 | `messages` | Scoped вопрос, ответ и шесть состояний обработки |
 | `message_sources` | Snapshot источника с composite FK к своему сообщению |
 | `ai_requests` | Scoped ключ, SHA-256 значимого payload, состояние и terminal result |
@@ -176,8 +188,7 @@ SELECT и запреты UPDATE/DELETE/TRUNCATE с SQLSTATE 42501. Схема и
 `deleted_at`, остальные состояния запрещают его; timestamp не раньше создания.
 Partial index исключает tombstones из обычного списка. Потребитель обязан сам
 фильтровать tombstones и отклонять публичные сессии удалённого агента: миграция
-сама не реализует HTTP CRUD, завершение сессий и очистку данных. CRUD агентов
-фильтрует tombstones; widget/chat session paths пока отсутствуют.
+сама не реализует HTTP CRUD, завершение сессий и очистку данных. CRUD агентов и кабинетный чат фильтруют tombstones. Публичный виджет пока не подключён.
 
 Настройки представлены явным `public_sources_enabled`, без произвольного JSON.
 `revision` нужен для If-Match, knowledge/active_knowledge и config/published_config
@@ -210,18 +221,24 @@ ChatService. Таблицы не реализуют автомат перехо�
 `ai_requests_scope_key` использует NULLS NOT DISTINCT для
 account+agent+visitor/member+operation+key; NULL не обходит уникальность.
 Widget операция требует visitor, test операция — member. Conversation/actor и
-request/message соединены составными FK. Внутренний
-[AIRequests.CreateOrRead](../backend/internal/repository/ai_request.go) выполняет
-INSERT ON CONFLICT DO NOTHING, затем SELECT в том же scope в транзакции
-READ COMMITTED. Хешируется JSON пары conversation_id+точный текст message.
-Повтор с новыми candidate ID возвращает исходные operation/message ID, state и
-result; другой значимый payload возвращает `ErrAIRequestConflict` через
-errors.Is. Stream — транспортный hint, в этот hash не входит. Репозиторий сам
-не создаёт messages; вызывающий сервис должен решать создание кандидата и
-rollback лишнего сообщения при replay до подключения к HTTP.
+request/message соединены составными FK. И репозиторий
+[AIRequests.CreateOrRead](../backend/internal/repository/ai_request.go), и
+кабинетный приём используют INSERT ON CONFLICT DO NOTHING, затем SELECT по
+тому же ключу в транзакции READ COMMITTED. Хешируется JSON пары
+`conversation_id` и точного текста `message`. Повтор с новыми candidate ID
+возвращает исходные operation/message ID, state и result. Другой payload даёт
+конфликт. Stream в хеш не входит.
 
-Это основание схемы и локальная проверка replay; RBAC, session orchestration,
-RPC, ledger и политики quota/retention не реализованы. SQL-тесты проверяют
+Кабинетный путь создаёт сообщение одним SQL-выражением вместе с новым
+`ai_requests`. Если ключ уже занят, новое сообщение не записывается.
+[Миграция 7](../backend/migrations/000007_chat_conversation_keys.up.sql)
+добавляет nullable SHA-256 хеш ключа создания диалога и частичный уникальный
+индекс по компании, агенту, пользователю и хешу. У прежних диалогов это
+поле остаётся NULL. Down удаляет хеши ключей, индекс и функцию блокировки, сохраняя диалоги,
+сообщения и операции приёма. Учёт обращений, исполнение запросов к модели и
+срок хранения replay пока не подключены.
+
+SQL-тесты проверяют
 чистую установку, upgrade 2→3→4, repeat, down 4→2→4 с сохранением identity/audit,
 чужие связи, NULL scope, конфликт hash и конкурентный INSERT с реальной
 блокировкой, подтверждённой `pg_blocking_pids`.
@@ -231,7 +248,7 @@ RPC, ledger и политики quota/retention не реализованы. SQL
 действующие sessions по существующему CASCADE, но сохраняет conversation,
 messages и ai_requests как историю. UUID actor в старом диалоге не доказывает
 текущие полномочия. Новая member conversation после отзыва запрещена, а текущее
-право на чтение истории и replay должен заново проверять вызывающий сервис.
+право на чтение истории и повтор заново проверяется через сессию и SQL.
 Composite request→conversation actor FK и visitor/member XOR сохраняются.
 
 Trigger check_conversation_member берёт FOR KEY SHARE при проверке membership,

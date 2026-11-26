@@ -28,6 +28,12 @@ func NewHandler(health *Health, endpoints ...http.Handler) http.Handler {
 			if h != nil {
 				mux.Handle("/api/v1/auth/", h)
 			}
+		case *ChatHandler:
+			if h != nil {
+				mux.Handle("/api/v1/agents/{id}/conversations", h)
+				mux.Handle("/api/v1/agents/{id}/test-chat/messages", h)
+				mux.Handle("/api/v1/conversations/{id}/messages", h)
+			}
 		case *AgentHandler:
 			if h != nil {
 				mux.Handle("/api/v1/agents", h)

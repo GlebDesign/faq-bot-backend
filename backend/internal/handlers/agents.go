@@ -18,7 +18,7 @@ import (
 	"faqbot/backend/internal/service"
 )
 
-type AgentSessions interface {
+type CabinetSessions interface {
 	Scope(context.Context, string) (service.Scope, string, error)
 }
 type AgentService interface {
@@ -29,12 +29,12 @@ type AgentService interface {
 	Delete(context.Context, service.Scope, string, string, string) (models.AgentCleanup, error)
 }
 type AgentHandler struct {
-	sessions AgentSessions
+	sessions CabinetSessions
 	agents   AgentService
 	origin   string
 }
 
-func NewAgentHandler(sessions AgentSessions, agents AgentService, origin string) *AgentHandler {
+func NewAgentHandler(sessions CabinetSessions, agents AgentService, origin string) *AgentHandler {
 	return &AgentHandler{sessions: sessions, agents: agents, origin: origin}
 }
 
