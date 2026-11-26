@@ -839,7 +839,7 @@
   {
     "name": "sendTestChat.valid",
     "method": "POST",
-    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "path": "/api/v1/agents/00000000-0000-4000-8000-000000000011/test-chat/messages",
     "headers": {
       "X-Request-ID": "req_demo",
       "Idempotency-Key": "op_demo_1",
@@ -850,7 +850,7 @@
       "Origin": "https://cabinet.example.invalid"
     },
     "body": {
-      "conversation_id": "conv_a1",
+      "conversation_id": "00000000-0000-4000-8000-000000000101",
       "message": "Какие сроки доставки?",
       "stream": false
     },
@@ -859,7 +859,7 @@
   {
     "name": "sendTestChat.missing_idempotency",
     "method": "POST",
-    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "path": "/api/v1/agents/00000000-0000-4000-8000-000000000011/test-chat/messages",
     "headers": {
       "X-Request-ID": "req_demo",
       "If-Match": "\"1\"",
@@ -869,7 +869,7 @@
       "Origin": "https://cabinet.example.invalid"
     },
     "body": {
-      "conversation_id": "conv_a1",
+      "conversation_id": "00000000-0000-4000-8000-000000000101",
       "message": "Какие сроки доставки?",
       "stream": false
     },
@@ -878,7 +878,7 @@
   {
     "name": "sendTestChat.forged_account",
     "method": "POST",
-    "path": "/api/v1/agents/agent_a1/test-chat/messages",
+    "path": "/api/v1/agents/00000000-0000-4000-8000-000000000011/test-chat/messages",
     "headers": {
       "X-Request-ID": "req_demo",
       "Idempotency-Key": "op_demo_1",
@@ -889,7 +889,7 @@
       "Origin": "https://cabinet.example.invalid"
     },
     "body": {
-      "conversation_id": "conv_a1",
+      "conversation_id": "00000000-0000-4000-8000-000000000101",
       "message": "Какие сроки доставки?",
       "stream": false,
       "account_id": "account_b"
@@ -899,7 +899,7 @@
   {
     "name": "createTestConversation.valid",
     "method": "POST",
-    "path": "/api/v1/agents/agent_a1/conversations",
+    "path": "/api/v1/agents/00000000-0000-4000-8000-000000000011/conversations",
     "headers": {
       "X-Request-ID": "req_demo",
       "Idempotency-Key": "op_demo_1",
@@ -915,7 +915,7 @@
   {
     "name": "createTestConversation.missing_idempotency",
     "method": "POST",
-    "path": "/api/v1/agents/agent_a1/conversations",
+    "path": "/api/v1/agents/00000000-0000-4000-8000-000000000011/conversations",
     "headers": {
       "X-Request-ID": "req_demo",
       "If-Match": "\"1\"",
@@ -930,7 +930,7 @@
   {
     "name": "listConversations.valid",
     "method": "GET",
-    "path": "/api/v1/agents/agent_a1/conversations",
+    "path": "/api/v1/agents/00000000-0000-4000-8000-000000000011/conversations",
     "headers": {
       "X-Request-ID": "req_demo",
       "Idempotency-Key": "op_demo_1",
@@ -943,7 +943,7 @@
   {
     "name": "listConversations.invalid_limit",
     "method": "GET",
-    "path": "/api/v1/agents/agent_a1/conversations?limit=101",
+    "path": "/api/v1/agents/00000000-0000-4000-8000-000000000011/conversations?limit=101",
     "headers": {
       "X-Request-ID": "req_demo",
       "Idempotency-Key": "op_demo_1",
@@ -956,7 +956,7 @@
   {
     "name": "listMessages.valid",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages",
     "headers": {
       "X-Request-ID": "req_demo",
       "Idempotency-Key": "op_demo_1",
@@ -969,12 +969,22 @@
   {
     "name": "listMessages.invalid_limit",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages?limit=101",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages?limit=101",
     "headers": {
       "X-Request-ID": "req_demo",
       "Idempotency-Key": "op_demo_1",
       "If-Match": "\"1\"",
       "Content-Type": "application/json"
+    },
+    "body": null,
+    "valid": false
+  },
+  {
+    "name": "listMessages.unexpected_scope_filter",
+    "method": "GET",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages?account_id=account_b",
+    "headers": {
+      "Cookie": "faqbot_session=fixture-cabinet"
     },
     "body": null,
     "valid": false

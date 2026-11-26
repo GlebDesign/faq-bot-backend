@@ -1266,11 +1266,12 @@ paths:
   "/api/v1/agents/{id}/test-chat/messages":
     post:
       operationId: sendTestChat
-      x-implementation-status: planned
+      x-maxBodyBytes: 1048576
+      x-implementation-status: implemented
       summary: Тестовый чат
       tags:
         - member
-      description: 'Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404. Повтор незавершённой операции: 202 ChatOperation с исходными operation_id/message_id/conversation_id и accepted/generating. 409 idempotency_conflict означает другой значимый payload.'
+      description: 'Первый запрос сохраняет сообщение со статусом accepted и возвращает 202 ChatOperation. Вызов модели пока не подключён. Повтор возвращает исходные ID, сохранённое состояние и, если оно терминальное, сохранённый ответ или ошибку. Изменение текста или диалога при том же ключе даёт 409. Диалог должен принадлежать пользователю из cookie-сессии и агенту из пути. Для чужого диалога или удалённого агента ответ 404.'
       security:
         - CabinetIdentity: []
       x-permission: member
@@ -1280,14 +1281,14 @@ paths:
           name: id
           required: true
           schema:
-            maxLength: 80
-            minLength: 1
-            pattern: ^[A-Za-z0-9_-]+$
             type: string
+            pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         - $ref: '#/components/parameters/IdempotencyKey'
         - $ref: '#/components/parameters/CSRFToken'
         - $ref: '#/components/parameters/AuthOrigin'
       responses:
+        '405':
+          $ref: '#/components/responses/ChatMethodNotAllowed'
         '200':
           "$ref": "#/components/responses/TestChatAnswer"
         '400':
@@ -1298,14 +1299,10 @@ paths:
           "$ref": "#/components/responses/403"
         '404':
           "$ref": "#/components/responses/404"
-        '429':
-          "$ref": "#/components/responses/429"
         '500':
           "$ref": "#/components/responses/500"
         '409':
           "$ref": "#/components/responses/409"
-        '422':
-          "$ref": "#/components/responses/422"
         '503':
           "$ref": "#/components/responses/503"
         '504':
@@ -1317,19 +1314,25 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/MessageCreate"
+              allOf:
+                - $ref: '#/components/schemas/MessageCreate'
+                - type: object
+                  properties:
+                    conversation_id:
+                      type: string
+                      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
             example:
-              conversation_id: conv_a1
+              conversation_id: 00000000-0000-4000-8000-000000000101
               message: Какие сроки доставки?
               stream: false
   "/api/v1/agents/{id}/conversations":
     post:
       operationId: createTestConversation
-      x-implementation-status: planned
+      x-implementation-status: implemented
       summary: Начать тестовый диалог
       tags:
         - member
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+      description: 'Создаёт диалог текущего пользователя у агента из пути. Тело запроса должно быть пустым. Повтор ключа в пределах компании, пользователя и агента возвращает исходный диалог. Для чужого или удалённого агента ответ 404.'
       security:
         - CabinetIdentity: []
       x-permission: member
@@ -1339,14 +1342,14 @@ paths:
           name: id
           required: true
           schema:
-            maxLength: 80
-            minLength: 1
-            pattern: ^[A-Za-z0-9_-]+$
             type: string
+            pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         - $ref: '#/components/parameters/IdempotencyKey'
         - $ref: '#/components/parameters/CSRFToken'
         - $ref: '#/components/parameters/AuthOrigin'
       responses:
+        '405':
+          $ref: '#/components/responses/ChatMethodNotAllowed'
         '201':
           "$ref": "#/components/responses/Conversation"
         '400':
@@ -1357,23 +1360,16 @@ paths:
           "$ref": "#/components/responses/403"
         '404':
           "$ref": "#/components/responses/404"
-        '429':
-          "$ref": "#/components/responses/429"
         '500':
           "$ref": "#/components/responses/500"
-        '409':
-          "$ref": "#/components/responses/409"
-        '422':
-          "$ref": "#/components/responses/422"
-        '503':
-          "$ref": "#/components/responses/503"
     get:
       operationId: listConversations
-      x-implementation-status: planned
+      x-reject-unknown-query-parameters: true
+      x-implementation-status: implemented
       summary: История диалогов
       tags:
         - member
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+      description: 'Возвращает диалоги текущего пользователя у агента из пути в порядке created_at DESC, id DESC. Курсор привязан к компании, пользователю и агенту. Для чужого или удалённого агента ответ 404.'
       security:
         - CabinetIdentity: []
       x-permission: member
@@ -1384,12 +1380,12 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
-            maxLength: 80
-            pattern: "^[A-Za-z0-9_-]+$"
+            pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         - "$ref": "#/components/parameters/Limit"
         - "$ref": "#/components/parameters/Cursor"
       responses:
+        '405':
+          $ref: '#/components/responses/ChatMethodNotAllowed'
         '200':
           "$ref": "#/components/responses/ConversationPage"
         '400':
@@ -1400,18 +1396,17 @@ paths:
           "$ref": "#/components/responses/403"
         '404':
           "$ref": "#/components/responses/404"
-        '429':
-          "$ref": "#/components/responses/429"
         '500':
           "$ref": "#/components/responses/500"
   "/api/v1/conversations/{id}/messages":
     get:
       operationId: listMessages
-      x-implementation-status: planned
+      x-reject-unknown-query-parameters: true
+      x-implementation-status: implemented
       summary: Сообщения диалога
       tags:
         - member
-      description: Scope определяется проверенной identity. account_id/tenant_id из payload не принимаются; чужой ресурс возвращает 404.
+      description: 'Возвращает сообщения собственного диалога в порядке created_at DESC, id DESC. Курсор привязан к компании, пользователю и диалогу. Для чужого диалога или удалённого агента ответ 404.'
       security:
         - CabinetIdentity: []
       x-permission: member
@@ -1422,12 +1417,12 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
-            maxLength: 80
-            pattern: "^[A-Za-z0-9_-]+$"
+            pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         - "$ref": "#/components/parameters/Limit"
         - "$ref": "#/components/parameters/Cursor"
       responses:
+        '405':
+          $ref: '#/components/responses/ChatMethodNotAllowed'
         '200':
           "$ref": "#/components/responses/MessagePage"
         '400':
@@ -1438,8 +1433,6 @@ paths:
           "$ref": "#/components/responses/403"
         '404':
           "$ref": "#/components/responses/404"
-        '429':
-          "$ref": "#/components/responses/429"
         '500':
           "$ref": "#/components/responses/500"
   "/api/v1/messages/{id}/sources/{citation_id}":
@@ -4170,11 +4163,11 @@ components:
         question:
           type: string
           minLength: 1
-          maxLength: 4000
+          description: Сохранённый вопрос. Лимит при отправке задаётся схемой запроса.
         answer:
           type: string
           minLength: 1
-          maxLength: 10000
+          description: Сохранённый ответ, если он доступен.
           nullable: true
         created_at:
           type: string
@@ -5205,7 +5198,7 @@ components:
         minLength: 1
         maxLength: 128
         pattern: "^[A-Za-z0-9_-]+$"
-      description: CRUD агентов повторяет проверку cookie-сессии и роли до SQL replay. Scope — account+actor+operation+resource; результат и ID исходные, конфликт payload — 409. PATCH включает If-Match в hash и проверяет replay до устаревшей revision. DELETE не требует If-Match; 202 Job pending означает durable cleanup request и tombstone в одной транзакции с аудитом, без запущенного worker; новый ключ для tombstone возвращает 404. Проектируемые бизнес-операции повторяются только после новой проверки прав. Для чата scope — доверенные account+agent+visitor/member+operation; conversation_id, текст message входят в SHA-256 значимого payload; серверные candidate ID и stream как способ доставки не меняют операцию. Тот же key/payload возвращает исходный operation ID, state и terminal result; другой payload — 409 idempotency_conflict. Незавершённая операция возвращает сохранённый state без повторной генерации; проектируемый HTTP для accepted/generating использует 202 ChatOperation и Retry-After. Для остальных операций scope — account+actor+operation+resource. Срок хранения replay и правила списания, резервирования и возврата обращений требуют BE-029/SRE-027. Auth исключён. Первичная выдача widget session исключена; token-response replay не выполняется.
+      description: CRUD агентов повторяет проверку cookie-сессии и роли до SQL replay. Scope — account+actor+operation+resource; результат и ID исходные, конфликт payload — 409. PATCH включает If-Match в hash и проверяет replay до устаревшей revision. DELETE не требует If-Match; 202 Job pending означает durable cleanup request и tombstone в одной транзакции с аудитом, без запущенного worker; новый ключ для tombstone возвращает 404. Проектируемые бизнес-операции повторяются только после новой проверки прав. Для чата scope — доверенные account+agent+visitor/member+operation; conversation_id, текст message входят в SHA-256 значимого payload; серверные candidate ID и stream как способ доставки не меняют операцию. Тот же key/payload возвращает исходный operation ID, state и terminal result; другой payload — 409 idempotency_conflict. Незавершённая операция возвращает сохранённый state без повторной генерации; кабинетный HTTP для accepted/generating использует 202 ChatOperation и Retry-After. Создание кабинетного диалога повторяется в scope account+agent+member. Для остальных операций scope — account+actor+operation+resource. Срок хранения replay и правила списания, резервирования и возврата обращений требуют BE-029/SRE-027. Auth исключён. Первичная выдача widget session исключена; token-response replay не выполняется.
     IfMatch:
       name: If-Match
       in: header
@@ -5233,6 +5226,21 @@ components:
         maxLength: 512
       description: 'Opaque cursor bound to account, resource, sort and filters. Stable order created_at DESC,id DESC. Invalid cursor: 400. No further page: next_cursor=null.'
   responses:
+    ChatMethodNotAllowed:
+      description: Метод не поддерживается. HEAD возвращает пустое тело.
+      headers:
+        Allow:
+          required: true
+          schema: {type: string, enum: ["GET, POST", "GET", "POST"]}
+        X-Request-ID:
+          schema: {type: string}
+        Cache-Control:
+          required: true
+          schema: {type: string, enum: [no-store]}
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIError'
     '405':
       description: Метод не поддерживается; HEAD также получает 405 и пустое тело.
       headers:
@@ -6852,7 +6860,7 @@ components:
             status: accepted
           schema:
             $ref: '#/components/schemas/ChatOperation'
-      description: Операция ещё выполняется; повтор возвращает исходные ID и состояние, без новой генерации.
+      description: Запрос принят или находится в обработке. Повтор возвращает исходные ID и сохранённое состояние.
       headers:
         Cache-Control:
           required: true

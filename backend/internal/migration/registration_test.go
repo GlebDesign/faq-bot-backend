@@ -180,15 +180,7 @@ func TestTrialMigrationUpgradeNoBackfill(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	dir := t.TempDir()
-	for _, name := range []string{"000001_identity.up.sql", "000001_identity.down.sql", "000002_audit.up.sql", "000002_audit.down.sql"} {
-		data, err := os.ReadFile(filepath.Join("../../migrations", name))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(dir, name), data, 0600); err != nil {
-			t.Fatal(err)
-		}
-	}
+	copyMigrations(t, dir, "000001_identity.up.sql", "000001_identity.down.sql", "000002_audit.up.sql", "000002_audit.down.sql")
 	if err := Apply(ctx, dsn, dir); err != nil {
 		t.Fatal(err)
 	}
@@ -209,8 +201,9 @@ func TestTrialMigrationUpgradeNoBackfill(t *testing.T) {
 	if err := pool.QueryRowContext(ctx, "SELECT row_to_json(audit_events)::text FROM audit_events").Scan(&history); err != nil {
 		t.Fatal(err)
 	}
+	copyMigrations(t, dir, "000003_agents.up.sql", "000003_agents.down.sql", "000004_conversations.up.sql", "000004_conversations.down.sql", "000005_agent_operations.up.sql", "000005_agent_operations.down.sql", "000006_trial_bootstrap.up.sql", "000006_trial_bootstrap.down.sql")
 	for range 2 {
-		if err := Apply(ctx, dsn, "../../migrations"); err != nil {
+		if err := Apply(ctx, dsn, dir); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -236,7 +229,7 @@ func TestTrialMigrationUpgradeNoBackfill(t *testing.T) {
 	if err != nil {
 		t.Fatal(db.WrapError("trial driver", errors.Join(err, conn.Close())))
 	}
-	path, err := filepath.Abs("../../migrations")
+	path, err := filepath.Abs(dir)
 	if err != nil {
 		t.Fatal(err)
 	}

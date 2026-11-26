@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 type AIRequestInput struct {
 	ID             string
@@ -20,4 +23,24 @@ type AIRequest struct {
 	ID        string
 	State     string
 	Result    json.RawMessage
+}
+
+type Conversation struct {
+	ID        string
+	AgentID   string
+	CreatedAt time.Time
+}
+
+type Message struct {
+	ID             string
+	ConversationID string
+	Status         string
+	Question       string
+	Answer         *string
+	CreatedAt      time.Time
+}
+
+type ChatPosition struct {
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
 }

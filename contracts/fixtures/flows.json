@@ -311,13 +311,13 @@
   {
     "name": "message.accepted",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages",
     "status": 200,
     "body": {
       "items": [
         {
-          "id": "msg_a1",
-          "conversation_id": "conv_a1",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "conversation_id": "00000000-0000-4000-8000-000000000101",
           "status": "accepted",
           "question": "Какие сроки доставки?",
           "answer": null,
@@ -334,13 +334,13 @@
   {
     "name": "message.generating",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages",
     "status": 200,
     "body": {
       "items": [
         {
-          "id": "msg_a1",
-          "conversation_id": "conv_a1",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "conversation_id": "00000000-0000-4000-8000-000000000101",
           "status": "generating",
           "question": "Какие сроки доставки?",
           "answer": null,
@@ -357,13 +357,13 @@
   {
     "name": "message.completed",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages",
     "status": 200,
     "body": {
       "items": [
         {
-          "id": "msg_a1",
-          "conversation_id": "conv_a1",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "conversation_id": "00000000-0000-4000-8000-000000000101",
           "status": "completed",
           "question": "Какие сроки доставки?",
           "answer": "Три дня.",
@@ -380,13 +380,13 @@
   {
     "name": "message.no_answer",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages",
     "status": 200,
     "body": {
       "items": [
         {
-          "id": "msg_a1",
-          "conversation_id": "conv_a1",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "conversation_id": "00000000-0000-4000-8000-000000000101",
           "status": "no_answer",
           "question": "Какие сроки доставки?",
           "answer": "Три дня.",
@@ -403,13 +403,13 @@
   {
     "name": "message.failed",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages",
     "status": 200,
     "body": {
       "items": [
         {
-          "id": "msg_a1",
-          "conversation_id": "conv_a1",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "conversation_id": "00000000-0000-4000-8000-000000000101",
           "status": "failed",
           "question": "Какие сроки доставки?",
           "answer": null,
@@ -426,13 +426,13 @@
   {
     "name": "message.cancelled",
     "method": "GET",
-    "path": "/api/v1/conversations/conv_a1/messages",
+    "path": "/api/v1/conversations/00000000-0000-4000-8000-000000000101/messages",
     "status": 200,
     "body": {
       "items": [
         {
-          "id": "msg_a1",
-          "conversation_id": "conv_a1",
+          "id": "00000000-0000-4000-8000-000000000102",
+          "conversation_id": "00000000-0000-4000-8000-000000000101",
           "status": "cancelled",
           "question": "Какие сроки доставки?",
           "answer": null,
