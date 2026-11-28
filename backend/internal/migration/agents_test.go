@@ -52,7 +52,7 @@ func TestAgentsSQLConstraints(t *testing.T) {
 	if err := Apply(context.Background(), dsn, "../../migrations"); err != nil {
 		t.Fatal(err)
 	}
-	schemaVersion(t, pool, 7)
+	schemaVersion(t, pool, 8)
 	if _, err := pool.Exec(`INSERT INTO accounts(id) VALUES ('00000000-0000-4000-8000-000000000001'),('00000000-0000-4000-8000-000000000002')`); err != nil {
 		t.Fatal(db.WrapError("create accounts", err))
 	}

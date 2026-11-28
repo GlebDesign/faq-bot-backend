@@ -1,21 +1,9 @@
 package dto
 
-type PublicSource struct {
-	CitationID  string `json:"citation_id"`
-	DisplayName string `json:"display_name"`
-	Locator     string `json:"locator"`
-	Excerpt     string `json:"excerpt"`
-}
+import "faqbot/backend/internal/models"
 
-type CabinetSource struct {
-	CitationID        string `json:"citation_id"`
-	DisplayName       string `json:"display_name"`
-	Locator           string `json:"locator"`
-	Excerpt           string `json:"excerpt"`
-	DocumentID        string `json:"document_id"`
-	DocumentVersion   int64  `json:"document_version"`
-	KnowledgeRevision int64  `json:"knowledge_revision"`
-}
+type PublicSource = models.PublicSource
+type CabinetSource = models.CabinetSource
 
 type MessageCreate struct {
 	ConversationID string `json:"conversation_id"`
@@ -23,26 +11,8 @@ type MessageCreate struct {
 	Stream         bool   `json:"stream"`
 }
 
-type ChatAnswer struct {
-	MessageID         string         `json:"message_id"`
-	ConversationID    string         `json:"conversation_id"`
-	Status            string         `json:"status"`
-	Answer            string         `json:"answer"`
-	HasAnswer         bool           `json:"has_answer"`
-	Sources           []PublicSource `json:"sources"`
-	RemainingRequests int64          `json:"remaining_requests"`
-}
-
-type TestChatAnswer struct {
-	MessageID         string          `json:"message_id"`
-	ConversationID    string          `json:"conversation_id"`
-	Status            string          `json:"status"`
-	Answer            string          `json:"answer"`
-	HasAnswer         bool            `json:"has_answer"`
-	Sources           []CabinetSource `json:"sources"`
-	RemainingRequests int64           `json:"remaining_requests"`
-	KnowledgeRevision int64           `json:"knowledge_revision"`
-}
+type ChatAnswer = models.ChatAnswer
+type TestChatAnswer = models.TestChatAnswer
 
 type Conversation struct {
 	ID        string `json:"id"`

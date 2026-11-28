@@ -59,8 +59,12 @@ func testAuth(t *testing.T) *Auth {
 		}
 	})
 	pool = scoped
-	for _, name := range []string{"000001_identity.up.sql", "000006_trial_bootstrap.up.sql"} {
-		migration, err := os.ReadFile(filepath.Join("..", "..", "migrations", name))
+	names, err := filepath.Glob("../../migrations/*.up.sql")
+	if err != nil || len(names) == 0 {
+		t.Fatalf("load migrations: %v", err)
+	}
+	for _, name := range names {
+		migration, err := os.ReadFile(name)
 		if err != nil {
 			t.Fatal(err)
 		}

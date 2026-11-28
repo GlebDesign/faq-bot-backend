@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+const (
+	DefaultTrialRequests = 25
+	DefaultTrialDays     = 14
+)
+
 type Config struct {
 	AgentCursorKey        []byte
 	AuthEnabled           bool
@@ -19,6 +24,8 @@ type Config struct {
 	AuthAllowInsecureHTTP bool
 	DatabaseURL           string
 	MigrationsPath        string
+	TrialRequests         int
+	TrialDays             int
 	Environment           string
 	ListenAddr            string
 	ShutdownTimeout       time.Duration
@@ -30,6 +37,8 @@ func Load() (Config, error) {
 		ListenAddr:      "127.0.0.1:8080",
 		ShutdownTimeout: 10 * time.Second,
 		MigrationsPath:  "./migrations",
+		TrialRequests:   DefaultTrialRequests,
+		TrialDays:       DefaultTrialDays,
 	}
 	if value, ok := os.LookupEnv("APP_ENV"); ok {
 		c.Environment = value
@@ -71,6 +80,21 @@ func Load() (Config, error) {
 			return Config{}, errors.New("MIGRATIONS_PATH must not be empty")
 		}
 		c.MigrationsPath = value
+	}
+	for _, setting := range []struct {
+		name string
+		dest *int
+	}{{"TRIAL_REQUESTS", &c.TrialRequests}, {"TRIAL_DAYS", &c.TrialDays}} {
+		if value, ok := os.LookupEnv(setting.name); ok {
+			n, err := strconv.ParseInt(value, 10, 32)
+			if err != nil || n <= 0 {
+				return Config{}, errors.New(setting.name + " must be a positive 32-bit integer")
+			}
+			*setting.dest = int(n)
+		}
+	}
+	if c.TrialDays > 36500 {
+		return Config{}, errors.New("TRIAL_DAYS must be at most 36500")
 	}
 	c.SupabaseURL = os.Getenv("SUPABASE_URL")
 	c.SupabaseKey = os.Getenv("SUPABASE_KEY")
