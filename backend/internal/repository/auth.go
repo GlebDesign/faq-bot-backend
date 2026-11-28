@@ -8,14 +8,25 @@ import (
 	"errors"
 	"time"
 
+	"faqbot/backend/internal/config"
 	"faqbot/backend/internal/db"
 	"faqbot/backend/internal/models"
 	"faqbot/backend/internal/service"
 )
 
-type Auth struct{ pool *sql.DB }
+type Auth struct {
+	pool          *sql.DB
+	trialRequests int
+	trialDays     int
+}
 
-func NewAuth(pool *sql.DB) *Auth { return &Auth{pool: pool} }
+func NewAuth(pool *sql.DB) *Auth {
+	return NewAuthWithTrial(pool, config.DefaultTrialRequests, config.DefaultTrialDays)
+}
+
+func NewAuthWithTrial(pool *sql.DB, requests, days int) *Auth {
+	return &Auth{pool: pool, trialRequests: requests, trialDays: days}
+}
 
 func uuid() string {
 	var b [16]byte
@@ -32,6 +43,9 @@ func (a *Auth) Bootstrap(ctx context.Context, subject string) (models.Identity, 
 		return identity, service.ErrBadGateway
 	}
 	err := db.WithTx(ctx, a.pool, func(ctx context.Context, tx *sql.Tx) error {
+		if _, err := tx.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED"); err != nil {
+			return db.WrapError("set bootstrap isolation level", err)
+		}
 		userID := uuid()
 		var inserted string
 		err := tx.QueryRowContext(ctx,
@@ -60,7 +74,11 @@ func (a *Auth) Bootstrap(ctx context.Context, subject string) (models.Identity, 
 		if errors.Is(err, sql.ErrNoRows) {
 			return service.ErrUnauthorized
 		}
-		return db.WrapError("read identity membership", err)
+		if err != nil {
+			return db.WrapError("read identity membership", err)
+		}
+		_, err = tx.ExecContext(ctx, "SELECT grant_trial_quota($1,$2,$3,$4)", identity.AccountID, uuid(), a.trialRequests, a.trialDays)
+		return db.WrapError("grant trial quota", err)
 	})
 	return identity, err
 }

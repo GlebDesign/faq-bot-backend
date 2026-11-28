@@ -51,7 +51,8 @@ func TestConversationKeysMigrationPreservesHistorySQL(t *testing.T) {
 			}
 		}
 	}
-	if err := Apply(ctx, dsn, "../../migrations"); err != nil {
+	copyMigrations(t, dir, "000007_chat_conversation_keys.up.sql", "000007_chat_conversation_keys.down.sql")
+	if err := Apply(ctx, dsn, dir); err != nil {
 		t.Fatal(err)
 	}
 	schemaVersion(t, pool, 7)

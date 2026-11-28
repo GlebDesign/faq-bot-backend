@@ -3,13 +3,14 @@
 API не создаёт таблицы при старте. Изменения схемы применяет отдельная программа
 `cmd/migrate` на golang-migrate v4. В [каталоге SQL](../backend/migrations)
 находятся пары `000001_identity`, `000002_audit`, `000003_agents`,
-`000004_conversations`, `000005_agent_operations`, `000006_trial_bootstrap` и
-`000007_chat_conversation_keys`
+`000004_conversations`, `000005_agent_operations`, `000006_trial_bootstrap`,
+`000007_chat_conversation_keys` и `000008_quota_foundation`
 (`up.sql`/`down.sql`). Нужен PostgreSQL 15+ для `UNIQUE NULLS NOT DISTINCT`
 в миграции 4; локальные проверки выполняются на 18.3.
 Миграция 1 создаёт users/accounts/account_members/sessions, 2 — audit_events,
 3–5 — агентов, диалоги, replay и cleanup requests, 6 — trial_bootstrap_intents,
-7 — ключи повторного создания кабинетного диалога. Текущая версия схемы — 7.
+7 — ключи повторного создания кабинетного диалога, 8 — пакеты, начисления, резервы
+и расход обращений. Текущая версия схемы — 8.
 Runner не применяет файлы с номером ниже уже установленной версии. Если версия 6
 ранее накатывалась из отдельной ветки без версий 3–5, остановить установку и
 сверить фактическую схему с историей. Обычный повтор runner не добавит пропущенные
@@ -79,7 +80,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 SELECT to_regclass('public.schema_migrations') AS history;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests','agent_operations','agent_cleanup_requests','trial_bootstrap_intents')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests','agent_operations','agent_cleanup_requests','trial_bootstrap_intents','quota_packages','quota_allocations','quota_reservations','quota_usage_events')
 ORDER BY tablename;
 ```
 
@@ -91,9 +92,9 @@ runner поверх них. Если history не NULL, отдельно вып�
 SELECT version, dirty FROM public.schema_migrations;
 ```
 
-Версии 1–6 с dirty=false допускают обновление до 7 после сверки фактической
-схемы и исторических файлов; версия 7 с dirty=false — повтор того же каталога.
-Dirty=true или версия выше 7 требуют остановки и проверки
+Версии 1–7 с dirty=false допускают обновление до 8 после сверки фактической
+схемы и исторических файлов. Чистая версия 8 допускает повтор того же каталога.
+Dirty=true или версия выше 8 требуют остановки и проверки
 по разделу ошибок. Пустая history допускается только при отсутствии таблиц
 приложения. Существующую схему сверить с применёнными миграциями до продолжения.
 
@@ -134,8 +135,8 @@ env -u SUPABASE_URL -u SUPABASE_KEY -u AUTH_ORIGIN -u AUTH_ALLOW_INSECURE_HTTP -
 
 Ожидаются exit code 0 и JSON-лог `migrations are up to date`.
 Runner вызывает `Up()` и применяет все ожидающие миграции из указанного каталога.
-На пустой БД это 000001–000007, на версии 2 — 000003–000007, на версии 6 —
-000007. При чистой версии 7 изменений нет. Не подменять каталог неполным
+На пустой БД это 000001–000008, на версии 2 — 000003–000008, на версии 7 —
+000008. При чистой версии 8 повтор не меняет схему. Не подменять каталог неполным
 набором SQL ради выбора одной миграции. Повторный запуск
 той же команды допустим: уже применённая миграция повторно не выполняется.
 
@@ -175,7 +176,7 @@ psql "$MIGRATOR_DATABASE_URL" -v ON_ERROR_STOP=1
 ```sql
 SELECT version, dirty FROM public.schema_migrations;
 SELECT name, to_regclass('public.' || name) AS actual_table
-FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events'), ('agents'), ('conversations'), ('messages'), ('message_sources'), ('ai_requests'), ('agent_operations'), ('agent_cleanup_requests'), ('trial_bootstrap_intents')) AS t(name);
+FROM (VALUES ('users'), ('accounts'), ('account_members'), ('sessions'), ('audit_events'), ('agents'), ('conversations'), ('messages'), ('message_sources'), ('ai_requests'), ('agent_operations'), ('agent_cleanup_requests'), ('trial_bootstrap_intents'), ('quota_packages'), ('quota_allocations'), ('quota_reservations'), ('quota_usage_events')) AS t(name);
 SELECT to_regclass('public.sessions_expiry_idx') AS expiry_index,
        to_regclass('public.conversations_member_create_key_idx') AS conversation_key_index;
 SELECT indexname, indexdef FROM pg_indexes
@@ -185,11 +186,11 @@ FROM pg_constraint WHERE conrelid='public.audit_events'::regclass
 ORDER BY conname;
 SELECT tablename, tableowner FROM pg_tables
 WHERE schemaname='public'
-  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests','agent_operations','agent_cleanup_requests','trial_bootstrap_intents')
+  AND tablename IN ('schema_migrations','users','accounts','account_members','sessions','audit_events','agents','conversations','messages','message_sources','ai_requests','agent_operations','agent_cleanup_requests','trial_bootstrap_intents','quota_packages','quota_allocations','quota_reservations','quota_usage_events')
 ORDER BY tablename;
 ```
 
-Ожидаются одна строка `version=7, dirty=false`, тринадцать ненулевых `actual_table`,
+Ожидаются одна строка `version=8, dirty=false`, семнадцать ненулевых `actual_table`,
 индекс сессий, индекс ключей диалогов, шесть индексов аудита (PK, unique ключ и четыре поисковых)
 и владелец-migrator. Все ограничения должны быть валидны и соответствовать
 [000002 up](../backend/migrations/000002_audit.up.sql): PK/unique, FK компании,
@@ -207,7 +208,10 @@ NULLS NOT DISTINCT scope key, state/result checks. Подробности и о�
 Для `trial_bootstrap_intents` сверить PK по account_id, FK на accounts,
 NOT NULL для всех полей и CHECK единственного состояния pending с
 [000006 up](../backend/migrations/000006_trial_bootstrap.up.sql).
-Обновление оставляет таблицу пустой: старым компаниям trial автоматически не назначается.
+Миграция 8 сохраняет намерения и данные версии 7. Начисление появится при
+следующем bootstrap для компании с намерением. Проверить уникальность trial
+по намерению, составные FK компании и уникальные ключи расхода по
+[000008 up](../backend/migrations/000008_quota_foundation.up.sql).
 
 ## Права API после миграции
 
@@ -223,17 +227,27 @@ REVOKE UPDATE, DELETE, TRUNCATE ON public.audit_events FROM :"api_role";
 GRANT SELECT, INSERT ON public.audit_events TO :"api_role";
 REVOKE UPDATE, DELETE, TRUNCATE ON public.trial_bootstrap_intents FROM :"api_role";
 GRANT INSERT ON public.trial_bootstrap_intents TO :"api_role";
+GRANT EXECUTE ON FUNCTION public.grant_trial_quota(uuid,uuid,integer,integer) TO :"api_role";
+GRANT SELECT ON public.quota_allocations, public.quota_reservations TO :"api_role";
 GRANT SELECT, INSERT, UPDATE ON public.agents, public.agent_operations TO :"api_role";
 GRANT INSERT ON public.agent_cleanup_requests TO :"api_role";
 GRANT SELECT, INSERT ON public.conversations, public.messages, public.ai_requests TO :"api_role";
 GRANT EXECUTE ON FUNCTION public.lock_chat_write(uuid,uuid,uuid,uuid) TO :"api_role";
+GRANT INSERT ON public.quota_reservations, public.quota_usage_events TO :"api_role";
+GRANT UPDATE (state, finalized_at) ON public.quota_reservations TO :"api_role";
+GRANT UPDATE (state, result) ON public.ai_requests TO :"api_role";
+GRANT UPDATE (status, answer) ON public.messages TO :"api_role";
 COMMIT;
 ```
 
-Эти права покрывают Auth, подготовку trial, аудит, CRUD агентов и кабинетный чат. UPDATE agent_operations нужен
+Эти права покрывают Auth, выдачу trial, чтение остатка, аудит, CRUD агентов и
+кабинетный чат. `grant_trial_quota` читает намерение и записывает начисление
+от имени migrator. PUBLIC не имеет EXECUTE. API версии 7 продолжает записывать
+намерения с прежними правами. Прямой INSERT в начисления роли API не требуется. UPDATE agent_operations нужен
 для SELECT FOR UPDATE и сохранения результата; INSERT cleanup — для pending
-заявки в общей tx. API не получает DELETE/TRUNCATE этих таблиц. Для таблиц чата
-достаточно SELECT и INSERT. Право UPDATE на agents используется также для
+заявки в общей tx. API не получает DELETE/TRUNCATE этих таблиц. Для завершения
+запроса и восстановления резерва выдаётся UPDATE только на столбцы состояния
+и результата, перечисленные выше. Право UPDATE на agents используется также для
 блокировки FOR SHARE на агенте. Функция `lock_chat_write` от имени migrator
 блокирует строку членства и, при приёме сообщения, строку диалога. Прямое право
 UPDATE на `account_members` и `conversations` роли API не требуется.
@@ -289,6 +303,10 @@ SELECT name,
        AND has_table_privilege(current_user,'public.' || name,'INSERT') AS chat_access
 FROM (VALUES ('conversations'), ('messages'), ('ai_requests')) AS t(name);
 SELECT has_function_privilege(current_user,'public.lock_chat_write(uuid,uuid,uuid,uuid)','EXECUTE') AS chat_write_access;
+SELECT has_function_privilege(current_user,'public.grant_trial_quota(uuid,uuid,integer,integer)','EXECUTE') AS trial_grant,
+       has_table_privilege(current_user,'public.quota_allocations','SELECT')
+       AND has_table_privilege(current_user,'public.quota_reservations','SELECT') AS quota_read,
+       has_table_privilege(current_user,'public.quota_allocations','INSERT') AS quota_direct_insert;
 SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls
 FROM pg_roles WHERE rolname=current_user;
 SELECT has_schema_privilege(current_user,'public','CREATE') AS schema_create;
@@ -298,7 +316,8 @@ WHERE schemaname='public' AND tableowner=current_user;
 
 Ожидаются роль API, целевая БД, схема `public`, положительные проверки
 Auth/CRUD, трёх таблиц чата и исполнения `lock_chat_write`, audit_update/audit_delete/audit_truncate=false и
-trial_update/trial_delete/trial_truncate=false, четыре административных флага
+trial_update/trial_delete/trial_truncate=false. Ожидаются trial_grant=true,
+quota_read=true, quota_direct_insert=false, четыре административных флага
 `false`, `schema_create=false` и отсутствие таблиц
 во владении API. При другом результате администратор проверяет унаследованные
 привилегии и роли. Эти запросы не меняют grants и не заменяют пробный вход:
@@ -307,7 +326,7 @@ RLS и дополнительные ограничения существующ�
 Seed-данные не требуются, в том числе для `audit_events`. Не вставлять
 фиктивные события в рабочий журнал для проверки установки. При первом успешном входе/регистрации приложение
 создаёт пользователя, компанию, членство `owner` с `audit_read=false` и одно
-намерение trial в одной транзакции. Сессии создаёт backend; пароли и пользователей Supabase вручную
+намерение и начисление trial в одной транзакции. Сессии создаёт backend; пароли и пользователей Supabase вручную
 в SQL не вставлять. Повторный вход того же subject сохраняет компанию.
 
 ## Проверка данных авторизации
@@ -364,7 +383,13 @@ runner и проверки версии/dirty.
 используются явные `BEGIN`/`COMMIT`. Операции вне транзакций, например
 `CREATE INDEX CONCURRENTLY`, требуют отдельного файла и плана восстановления.
 
-Встроенный runner выполняет только `up`. Down версии 7 удаляет хеши ключей создания
+Встроенный runner выполняет только `up`. Down версии 8 удаляет пакеты, начисления,
+резервы и журнал расхода. Версия 7 и её намерения сохраняются. Повторный up
+создаёт пустые таблицы. Bootstrap снова сможет выдать trial по сохранённому
+намерению, поэтому down/up может потерять историю расхода и изменить остаток.
+При откате приложения до версии 7 сохранить схему 8.
+
+Down версии 7 удаляет хеши ключей создания
 кабинетных диалогов, индекс и функцию блокировки. Диалоги и сообщения сохраняются. После down/up
 повтор старого ключа создания может открыть новый диалог.
 
@@ -381,7 +406,7 @@ Down версии 6 удаляет
 Down версии 5 удаляет cleanup requests
 и replay агентов; их сохранённые ключи и результаты теряются. Down версии 4 удаляет ai_requests,
 message_sources, messages и conversations; down версии 3 — agents.
-Порядок обратный: сначала 7, затем 6, 5, 4 и 3. В новых down нет CASCADE и удаления
+Порядок обратный: сначала 8, затем 7, 6, 5, 4 и 3. В новых down нет CASCADE и удаления
 identity/audit; вместе с conversations удаляется SECURITY DEFINER
 function check_conversation_member. Down версии 2 удаляет только
 `audit_events` с журналом; down версии 1 — четыре таблицы авторизации.
@@ -392,3 +417,11 @@ function check_conversation_member. Down версии 2 удаляет толь�
 решения, остановки всех писателей, резервной копии и внешнего golang-migrate
 для `down 1` либо восстановления копии. Восстановление теряет записи после
 создания копии и не откатывает пользователей Supabase.
+
+## Проверка версии 8
+
+27.11.2026 на PostgreSQL 18.3 проверены переход 7→8, повтор runner и откат
+8→7→8 с сохранением данных версии 7. Под ограниченной ролью проверены старый SQL
+регистрации на схеме 8, обработка его намерения новым bootstrap, чтение остатка
+и отказ прямой записи начисления. Полный набор Go-тестов и прогон с `-race`
+прошли с отдельной БД и без пропусков.

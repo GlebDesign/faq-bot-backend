@@ -82,22 +82,34 @@ func TestRegistrationRepeatConcurrentAndIsolation(t *testing.T) {
 			t.Fatalf("unexpected identity: %+v", identities[i])
 		}
 	}
-	var original, state string
-	if err := pool.QueryRowContext(ctx, "SELECT row_to_json(trial_bootstrap_intents)::text,state FROM trial_bootstrap_intents").Scan(&original, &state); err != nil || state != fixture.TrialState {
+	var original, state, allocation string
+	if err := pool.QueryRowContext(ctx, `SELECT row_to_json(i)::text,i.state,row_to_json(a)::text
+		FROM trial_bootstrap_intents i JOIN quota_allocations a ON a.trial_account_id=i.account_id
+		WHERE a.request_count=25 AND a.granted_at=i.created_at AND a.expires_at=i.created_at+interval '336 hours'`).Scan(&original, &state, &allocation); err != nil || state != fixture.TrialState {
 		t.Fatalf("state=%s err=%v", state, err)
 	}
-	if _, err := auth.Bootstrap(ctx, "verified-subject"); err != nil {
+	if _, err := repository.NewAuthWithTrial(pool, 70, 35).Bootstrap(ctx, "verified-subject"); err != nil {
 		t.Fatal(err)
 	}
-	var repeated string
-	if err := pool.QueryRowContext(ctx, "SELECT row_to_json(trial_bootstrap_intents)::text FROM trial_bootstrap_intents").Scan(&repeated); err != nil || repeated != original {
-		t.Fatal("repeat changed intent", err)
+	var repeated, repeatedAllocation string
+	if err := pool.QueryRowContext(ctx, `SELECT row_to_json(i)::text,row_to_json(a)::text
+		FROM trial_bootstrap_intents i JOIN quota_allocations a ON a.trial_account_id=i.account_id`).Scan(&repeated, &repeatedAllocation); err != nil || repeated != original || repeatedAllocation != allocation {
+		t.Fatal("repeat changed intent or allocation", err)
 	}
-	other, err := auth.Bootstrap(ctx, "other-verified-subject")
+	other, err := repository.NewAuthWithTrial(pool, 70, 35).Bootstrap(ctx, "other-verified-subject")
 	if err != nil || other.AccountID == identities[0].AccountID || other.UserID == identities[0].UserID {
 		t.Fatal("identity isolation failed", err)
 	}
 	registrationCounts(t, ctx, pool, 2, 2, 2, 2)
+	quotaBalance(t, pool, identities[0].AccountID, 25)
+	quotaBalance(t, pool, other.AccountID, 70)
+	var configuredDates bool
+	err = pool.QueryRowContext(ctx, `SELECT a.granted_at=i.created_at AND a.expires_at=i.created_at+interval '840 hours'
+		FROM trial_bootstrap_intents i JOIN quota_allocations a ON a.trial_account_id=i.account_id
+		WHERE i.account_id=$1`, other.AccountID).Scan(&configuredDates)
+	if err != nil || !configuredDates {
+		t.Fatal("trial dates do not match configured 35 days", err)
+	}
 	var audits int
 	if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM audit_events").Scan(&audits); err != nil || audits != 0 {
 		t.Fatal("intent created allocation audit", err)
@@ -105,7 +117,7 @@ func TestRegistrationRepeatConcurrentAndIsolation(t *testing.T) {
 }
 
 func TestRegistrationRollback(t *testing.T) {
-	for _, table := range []string{"account_members", "trial_bootstrap_intents"} {
+	for _, table := range []string{"account_members", "trial_bootstrap_intents", "quota_allocations"} {
 		t.Run(table, func(t *testing.T) {
 			_, pool, ctx := registrationDatabase(t)
 			if _, err := pool.ExecContext(ctx, "ALTER TABLE "+table+" ADD CONSTRAINT reject_registration CHECK(false) NOT VALID"); err != nil {
@@ -118,13 +130,19 @@ func TestRegistrationRollback(t *testing.T) {
 				t.Fatalf("unsafe error or missing cause: %v", err)
 			}
 			registrationCounts(t, ctx, pool, 0, 0, 0, 0)
+			var count int
+			if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM quota_allocations").Scan(&count); err != nil || count != 0 {
+				t.Fatalf("rollback trial allocations=%d: %v", count, err)
+			}
 			if _, err := pool.ExecContext(ctx, "ALTER TABLE "+table+" DROP CONSTRAINT reject_registration"); err != nil {
 				t.Fatal(err)
 			}
-			if _, err := auth.Bootstrap(ctx, "private-subject"); err != nil {
+			identity, err := auth.Bootstrap(ctx, "private-subject")
+			if err != nil {
 				t.Fatal(err)
 			}
 			registrationCounts(t, ctx, pool, 1, 1, 1, 1)
+			quotaBalance(t, pool, identity.AccountID, 25)
 		})
 	}
 }
@@ -211,12 +229,12 @@ func TestTrialMigrationUpgradeNoBackfill(t *testing.T) {
 	if err := pool.QueryRowContext(ctx, "SELECT count(*) FROM trial_bootstrap_intents").Scan(&intents); err != nil || intents != 0 {
 		t.Fatal("upgrade backfilled trial", err)
 	}
-	legacy, err := repository.NewAuth(pool).Bootstrap(ctx, "legacy-subject")
+	legacy, err := legacyBootstrap(ctx, pool, "legacy-subject", chatID(900), chatID(901))
 	if err != nil || legacy.UserID != actor.ID || legacy.AccountID != auditAccount {
 		t.Fatal("legacy identity changed", err)
 	}
 	registrationCounts(t, ctx, pool, 1, 1, 1, 0)
-	created, err := repository.NewAuth(pool).Bootstrap(ctx, "before-down-subject")
+	created, err := legacyBootstrap(ctx, pool, "before-down-subject", chatID(900), chatID(901))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,7 +278,7 @@ func TestTrialMigrationUpgradeNoBackfill(t *testing.T) {
 	if err := pool.QueryRowContext(ctx, "SELECT version,dirty FROM schema_migrations").Scan(&version, &dirty); err != nil || version != 6 || dirty {
 		t.Fatalf("up version=%d dirty=%v err=%v", version, dirty, err)
 	}
-	repeated, err := repository.NewAuth(pool).Bootstrap(ctx, "before-down-subject")
+	repeated, err := legacyBootstrap(ctx, pool, "before-down-subject", chatID(902), chatID(903))
 	if err != nil || repeated != created {
 		t.Fatal("down changed identity", err)
 	}
@@ -326,11 +344,28 @@ func TestRegistrationRestrictedRole(t *testing.T) {
 	if extra || ddl {
 		t.Fatal("registration role has excess privileges")
 	}
-	auth := repository.NewAuth(restricted)
-	identity, err := auth.Bootstrap(ctx, "restricted-subject")
+	oldIdentity, err := legacyBootstrap(ctx, restricted, "restricted-subject", chatID(800), chatID(801))
 	if err != nil {
 		t.Fatal(err)
 	}
+	assertQuotaSQLState(t, restricted, "42501", "SELECT grant_trial_quota($1,$2,25,14)", oldIdentity.AccountID, chatID(802))
+	quotaBalance(t, pool, oldIdentity.AccountID, 0)
+	for _, q := range []string{
+		"GRANT EXECUTE ON FUNCTION grant_trial_quota(uuid,uuid,integer,integer) TO " + quotedRole,
+		"GRANT SELECT ON quota_allocations, quota_reservations TO " + quotedRole,
+	} {
+		if _, err := pool.ExecContext(ctx, q); err != nil {
+			t.Fatal(db.WrapError("grant quota privileges", err))
+		}
+	}
+	auth := repository.NewAuth(restricted)
+	identity, err := auth.Bootstrap(ctx, "restricted-subject")
+	if err != nil || identity != oldIdentity {
+		t.Fatal("restricted bootstrap changed legacy identity", err)
+	}
+	quotaBalance(t, restricted, identity.AccountID, 25)
+	assertQuotaSQLState(t, restricted, "42501", "UPDATE quota_allocations SET request_count=30")
+	assertQuotaSQLState(t, restricted, "42501", "INSERT INTO quota_allocations(id,account_id,kind,request_count) VALUES($1,$2,'trial',5)", chatID(803), identity.AccountID)
 	repeated, err := auth.Bootstrap(ctx, "restricted-subject")
 	if err != nil || repeated != identity {
 		t.Fatal("restricted repeat failed", err)
